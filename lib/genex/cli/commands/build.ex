@@ -24,5 +24,6 @@ defmodule Genex.Cli.Commands.Build do
   @impl Genex.Cli.Command
   def run(_opts, _args) do
     IO.puts("Running build command")
+    Genex.Builder.build()
   end
 end

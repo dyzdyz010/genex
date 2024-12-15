@@ -1,7 +1,7 @@
 defmodule Genex.Builder.Render.CoreComponents do
   use Phoenix.Component
 
-  embed_templates("templates/*")
+  # embed_templates("templates/*")
 
   attr(:title, :string, required: true)
   slot(:inner)

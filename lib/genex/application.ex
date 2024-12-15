@@ -7,6 +7,27 @@ defmodule Genex.Application do
 
   require Logger
 
+  defmodule TaskWorker do
+    use GenServer
+
+    def start_link(_) do
+      GenServer.start_link(__MODULE__, nil)
+    end
+
+    @impl true
+    def init(_) do
+      send(self(), :run_task)
+      {:ok, nil}
+    end
+
+    @impl true
+    def handle_info(:run_task, state) do
+      Genex.Cli.run()
+      Application.stop(:genex)
+      {:noreply, state}
+    end
+  end
+
   @impl true
   def start(_type, _args) do
     IO.puts("Starting Genex application")
@@ -14,18 +35,12 @@ defmodule Genex.Application do
     Logger.info("Args: #{inspect(Burrito.Util.Args.argv(), pretty: true)}")
 
     children = [
-      # Starts a worker by calling: Genex.Worker.start_link(arg)
-      # {Genex.Worker, arg}
+      {TaskWorker, []}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Genex.Supervisor]
     Supervisor.start_link(children, opts)
-
-    Genex.Cli.Runner.run()
-
-    # Stop the application gracefully
-    System.halt(0)
   end
 end
