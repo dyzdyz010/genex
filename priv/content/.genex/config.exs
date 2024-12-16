@@ -1,7 +1,7 @@
 import Config
 
 # 特定路径的布局配置
-config :genex, :meta,
+config :genex, :site,
   title: "Genex",
   description: "Genex is a static site generator for Phoenix."
 

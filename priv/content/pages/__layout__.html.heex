@@ -3,11 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title><%= @meta.title %></title>
+    <title>{@site.title}</title>
+    <meta name="description" content={@site.description} />
   </head>
-  <body>
+  <body>f
     <nav>
       <!-- 全局导航栏 -->
+      <h1>全局导航栏</h1>
     </nav>
     <main>
       <%= @inner_content %>

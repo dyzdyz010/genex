@@ -6,11 +6,12 @@ defmodule Genex.Builder.Render.Page do
   def render(template, assigns \\ []) do
     assigns = Map.new(assigns)
     # 添加全局配置，平铺在顶层，不要嵌套
-    meta = Application.get_env(:genex, :project, [])[:meta]
+    site = Application.get_env(:genex, :project, [])[:site]
+    Logger.info("Site: #{inspect(site, pretty: true)}")
     # Turn property list into a map
-    meta = Map.new(meta)
+    site = Map.new(site)
 
-    assigns = Map.put(assigns, :meta, meta)
+    assigns = Map.put(assigns, :site, site)
     render_with_layouts(template, assigns)
   end
 
@@ -28,19 +29,28 @@ defmodule Genex.Builder.Render.Page do
         assigns
       )
 
-    # 逐层应用布局
-    rendered_content =
-      Enum.reduce(layouts, content, fn layout, inner_content ->
-        layout_assigns = Map.put(assigns, :inner_content, inner_content)
-        Logger.info("Layout assigns: #{inspect(layout_assigns)}")
+    safe_content = {:safe, content}
 
-        Phoenix.Template.render_to_iodata(
-          Genex.Builder.Render.View,
-          layout,
-          "html",
-          layout_assigns
-        )
+    # 逐层应用布局
+    {:safe, rendered_content} =
+      Enum.reduce(layouts, safe_content, fn layout, inner_content ->
+        layout_assigns = Map.put(assigns, :inner_content, inner_content)
+        # Logger.info("Layout assigns: #{inspect(layout_assigns)}")
+
+        result =
+          Phoenix.Template.render_to_iodata(
+            Genex.Builder.Render.View,
+            layout,
+            "html",
+            layout_assigns
+          )
+
+        Logger.info("Result: #{inspect(result)}")
+
+        {:safe, result}
       end)
+
+    Logger.info("Rendered content: #{inspect(rendered_content)}")
 
     # Save to output folder respecting the build config and template path
     # Create the output folder and all child folders if they don't exist
