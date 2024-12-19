@@ -1,4 +1,5 @@
 defmodule Genex.Cli do
+  alias Genex.Builder.Render.Utils
   require Logger
 
   @commands [
@@ -8,17 +9,17 @@ defmodule Genex.Cli do
 
   def run() do
     # Detect if we are in a Genex project by checking if the .genex/config.exs file exists
-    unless is_genex_project() do
+    unless load_project_config() do
       IO.puts("Not in a Genex project")
       # Stop the application gracefully if we are not in a Genex project
       Application.stop(:genex)
     end
 
-    args = Burrito.Util.Args.argv()
     # IO.puts("Running Genex commands with args: #{inspect(args, pretty: true)}")
 
-    load_project_config()
     IO.inspect(Application.get_env(:genex, :project))
+
+    args = Burrito.Util.Args.argv()
 
     {command, opts, extra_args} = parse_args(args)
 
@@ -88,16 +89,24 @@ defmodule Genex.Cli do
     end
   end
 
-  def is_genex_project() do
-    project_root = Application.get_env(:genex, :project_root, nil)
-    Logger.info("Checking if we are in a Genex project with root: #{project_root}")
-    File.exists?(Path.join([project_root, ".genex/config.exs"]))
-  end
+  # def is_genex_project() do
+  #   project_root = Application.get_env(:genex, :project_root, nil)
+  #   Logger.info("Checking if we are in a Genex project with root: #{project_root}")
+  #   File.exists?(Path.join([project_root, ".genex/config.exs"]))
+  # end
 
   defp load_project_config() do
-    project_root = Application.get_env(:genex, :project_root, nil)
-    config = Genex.Config.load_project_config(project_root)
-    # Logger.info("Loaded project config: #{inspect(config, pretty: true)}")
-    Application.put_env(:genex, :project, config)
+    # Get current directory
+
+    case Genex.Config.load_project_config(Utils.project_root()) do
+      {:ok, config} ->
+        Logger.info("Loaded project config: #{inspect(config, pretty: true)}")
+        Application.put_env(:genex, :project, config)
+        true
+
+      {:error, error} ->
+        Logger.error("Failed to load project config: #{error}")
+        false
+    end
   end
 end

@@ -25,6 +25,8 @@ genex-*.tar
 # Temporary files, for example, from tests.
 /tmp/
 
+/burrito_out/
+
 .build/
 
 .output/

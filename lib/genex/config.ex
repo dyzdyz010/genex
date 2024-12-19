@@ -12,10 +12,13 @@ defmodule Genex.Config do
 
     if File.exists?(config_path) do
       try do
-        config_path
-        |> Config.Reader.read!()
-        |> Enum.into(%{})
-        |> Map.get(:genex, %{})
+        config =
+          config_path
+          |> Config.Reader.read!()
+          |> Enum.into(%{})
+          |> Map.get(:genex, %{})
+
+        {:ok, config}
       rescue
         e ->
           {:error, "Failed to load config: #{Exception.message(e)}"}

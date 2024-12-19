@@ -11,11 +11,20 @@ defmodule Genex.Builder.Render.Page do
     # Turn property list into a map
     site = Map.new(site)
 
+    template_content = Genex.Builder.Render.Utils.read_template(template)
+    meta = Genex.Builder.Render.Utils.parse_meta(template_content)
+    Logger.info("Meta: #{inspect(meta, pretty: true)}")
+
+    # 将meta添加到assigns中
+    assigns = Map.put(assigns, :meta, meta)
+
     assigns = Map.put(assigns, :site, site)
     render_with_layouts(template, assigns)
   end
 
   defp render_with_layouts(template, assigns) do
+    pages_folder = Application.get_env(:genex, :project, [])[:build][:pages_folder]
+    template = Path.join([pages_folder, template])
     # 获取模板对应的布局链
     layouts = get_template_layouts(template)
     Logger.info("Layouts: #{inspect(layouts)}")
