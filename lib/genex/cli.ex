@@ -100,7 +100,7 @@ defmodule Genex.Cli do
 
     case Genex.Config.load_project_config(Utils.project_root()) do
       {:ok, config} ->
-        Logger.info("Loaded project config: #{inspect(config, pretty: true)}")
+        Logger.debug("Loaded project config: #{inspect(config, pretty: true)}")
         Application.put_env(:genex, :project, config)
         true
 
