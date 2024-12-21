@@ -9,6 +9,12 @@ defmodule Genex.Builder.Render.Utils do
     project_root
   end
 
+  def assets_path() do
+    project_root = project_root()
+    assets_folder = Application.get_env(:genex, :project, [])[:build][:assets_folder]
+    Path.join([project_root, assets_folder])
+  end
+
   def pages_path() do
     project_root = project_root()
     pages_folder = Application.get_env(:genex, :project, [])[:build][:pages_folder]
@@ -34,12 +40,12 @@ defmodule Genex.Builder.Render.Utils do
   1. heex
   2. markdown
   """
-  @spec read_template(String.t(), :heex | :markdown | :unknown) :: String.t()
+  @spec read_template(String.t(), :heex | :markdown | :html | :unknown) :: String.t()
   def read_template(template, type) do
     project_root = project_root()
     pages_folder = Application.get_env(:genex, :project, [])[:build][:pages_folder]
-    Logger.info("Project root: #{project_root}")
-    Logger.info("Pages folder: #{pages_folder}")
+    # Logger.info("Project root: #{project_root}")
+    # Logger.info("Pages folder: #{pages_folder}")
     template_path = Path.join([project_root, pages_folder, template])
     # Find template with path but without .html.heex or .md
 
@@ -73,5 +79,12 @@ defmodule Genex.Builder.Render.Utils do
       _ ->
         nil
     end
+  end
+
+  def remove_meta(content) do
+    regex = ~r/<!--\s*@meta:\s*(%\{.*?\})\s*-->/s
+
+    Regex.replace(regex, content, "")
+    |> String.trim()
   end
 end

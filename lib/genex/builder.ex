@@ -5,6 +5,7 @@ defmodule Genex.Builder do
   def build() do
     IO.puts("#{IO.ANSI.green()}Start building site...")
     clean()
+    copy_assets()
     build_layouts()
     build_posts()
     build_pages()
@@ -19,6 +20,7 @@ defmodule Genex.Builder do
   defp build_pages() do
     IO.puts("#{IO.ANSI.green()}Start building pages...")
     layouts = build_layouts()
+    Logger.debug("Layouts: #{inspect(layouts, pretty: true)}")
     scan_and_build_pages(Utils.pages_path(), layouts)
   end
 
@@ -42,9 +44,9 @@ defmodule Genex.Builder do
             scan_and_build_pages(full_path, layouts)
           else
             if is_actual_page(file) do
-              Logger.debug("file: #{file}")
+              # Logger.debug("file: #{file}")
               template = Path.relative_to(full_path, Utils.pages_path())
-              Logger.debug("Template: #{template}")
+              # Logger.debug("Template: #{template}")
 
               Genex.Builder.Render.Page.render(
                 remove_extension(template, template_type(template)),
@@ -90,5 +92,14 @@ defmodule Genex.Builder do
     not String.starts_with?(filename, "__") and
       not String.starts_with?(filename, ".") and
       not String.starts_with?(filename, "[")
+  end
+
+  defp copy_assets() do
+    output_path = Utils.output_path()
+    assets_folder = Application.get_env(:genex, :project, [])[:build][:assets_folder]
+    assets_path = Path.join([output_path, assets_folder])
+    Logger.debug("Assets path: #{assets_path}")
+    File.mkdir_p!(assets_path)
+    File.cp_r!(Utils.assets_path(), assets_path)
   end
 end

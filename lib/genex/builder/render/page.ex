@@ -24,11 +24,11 @@ defmodule Genex.Builder.Render.Page do
       iex> Genex.Builder.Render.Page.render("docs/guide", layouts, type: :heex)F
   """
   def render(template, layouts, opts \\ []) do
-    Logger.info("Template: #{template}")
+    # Logger.info("Template: #{template}")
     # assigns = Map.new(assigns)
     # 添加全局配置，平铺在顶层，不要嵌套
     site = Application.get_env(:genex, :project, [])[:site]
-    Logger.info("Site: #{inspect(site, pretty: true)}")
+    # Logger.info("Site: #{inspect(site, pretty: true)}")
     # Turn property list into a map
     site = Map.new(site)
 
@@ -42,20 +42,30 @@ defmodule Genex.Builder.Render.Page do
       |> Map.put(:meta, meta)
       |> Map.put(:site, site)
 
+    dir = Path.dirname(template)
+    # Logger.debug("Dir: #{dir}")
+    layouts_for_template = layouts[dir] |> Enum.reverse()
+    Logger.debug("Layouts for template: #{inspect(layouts_for_template)}")
     # assigns = Map.put(assigns, :site, site)
-    render_with_layouts(template, assigns, layouts, opts)
+    layout_chain =
+      Genex.Builder.Render.Layout.rewrite_layout_chain(
+        layouts_for_template,
+        meta[:layout],
+        layouts
+      )
+
+    Logger.debug("Layout chain for template #{template}: #{inspect(layout_chain)}")
+
+    render_with_layouts(template, assigns, layout_chain, opts)
   end
 
-  defp render_with_layouts(template, assigns, layouts, opts) do
+  defp render_with_layouts(template, assigns, layouts_for_template, opts) do
     # pages_folder = Application.get_env(:genex, :project, [])[:build][:pages_folder]
     # template = Path.join([pages_folder, template])
-    Logger.debug("Template: #{template}")
+    # Logger.debug("Template: #{template}")
     # Get dir path of the template
-    dir = Path.dirname(template)
-    Logger.debug("Dir: #{dir}")
     # Get the layouts for the template
-    layouts_for_template = layouts[dir] |> Enum.reverse()
-    Logger.info("Layouts: #{inspect(layouts_for_template)}")
+    # Logger.info("Layouts: #{inspect(layouts_for_template)}")
 
     rendered_content =
       case opts[:type] do
@@ -75,7 +85,7 @@ defmodule Genex.Builder.Render.Page do
           {:safe, rendered_content} =
             Enum.reduce(layouts_for_template, safe_content, fn layout, inner_content ->
               layout_assigns = Map.put(assigns, :inner_content, inner_content)
-              Logger.info("Layout assigns: #{inspect(layout_assigns)}")
+              # Logger.info("Layout assigns: #{inspect(layout_assigns)}")
 
               result =
                 Phoenix.Template.render_to_iodata(
@@ -85,12 +95,12 @@ defmodule Genex.Builder.Render.Page do
                   layout_assigns
                 )
 
-              Logger.info("Result: #{inspect(result)}")
+              # Logger.info("Result: #{inspect(result)}")
 
               {:safe, result}
             end)
 
-          Logger.info("Rendered content: #{inspect(rendered_content)}")
+          # Logger.info("Rendered content: #{inspect(rendered_content)}")
           rendered_content
 
         :markdown ->
@@ -112,10 +122,10 @@ defmodule Genex.Builder.Render.Page do
   end
 
   defp write_to_output(template, content) do
-    Logger.debug("Write to output: #{template}")
-    Logger.debug("Content: #{inspect(content)}")
-    path = Path.join([Utils.output_pages_path(), template]) <> ".html"
-    Logger.debug("Path: #{path}")
+    # Logger.debug("Write to output: #{template}")
+    # Logger.debug("Content: #{inspect(content)}")
+    path = Path.join([Utils.output_path(), template]) <> ".html"
+    # Logger.debug("Path: #{path}")
     dir = Path.dirname(path)
     # If the directory doesn't exist, create it
     unless File.exists?(dir) do

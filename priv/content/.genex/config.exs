@@ -7,6 +7,7 @@ config :genex, :site,
 
 config :genex, :build,
   default_layout: "default",
+  assets_folder: "assets",
   content_folder: "posts",
   pages_folder: "pages",
   output_folder: ".output"

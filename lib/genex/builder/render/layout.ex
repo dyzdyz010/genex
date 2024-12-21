@@ -19,6 +19,38 @@ defmodule Genex.Builder.Render.Layout do
     |> scan_layouts(%{})
   end
 
+  @spec rewrite_layout_chain(list(), nil | false | String.t() | list(), map()) :: list()
+  def rewrite_layout_chain(default_chain, layout_config, layouts) do
+    Logger.debug("layout_config: #{inspect(layout_config)}")
+
+    case layout_config do
+      nil ->
+        default_chain
+
+      false ->
+        default_chain
+
+      conf when is_binary(conf) ->
+        new_chain = layouts[layout_config]
+        Logger.debug("new_chain: #{inspect(new_chain)}")
+
+        if layouts_exist?(new_chain) do
+          new_chain
+        else
+          raise "Layout #{layout_config} not found"
+        end
+
+      conf when is_list(conf) ->
+        # 如果meta中layout为列表，则布局链重设为该列表
+        # 检查列表中的布局是否存在，如果有不存在的布局则报错
+        if layouts_exist?(conf) do
+          conf
+        else
+          raise "Layout #{conf} not found"
+        end
+    end
+  end
+
   defp scan_layouts(dir_path, acc) do
     rel_path = Path.relative_to(dir_path, Utils.pages_path())
     # Logger.debug("rel_path: #{rel_path}")
@@ -64,6 +96,10 @@ defmodule Genex.Builder.Render.Layout do
       layout_path = Path.join(path_segment ++ ["__layout__"])
       if layout_exists?(layout_path), do: acc ++ [layout_path], else: acc
     end)
+  end
+
+  defp layouts_exist?(layouts) do
+    Enum.all?(layouts, &layout_exists?/1)
   end
 
   defp layout_exists?(layout_path) do
