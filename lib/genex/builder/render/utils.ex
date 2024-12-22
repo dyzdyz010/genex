@@ -21,6 +21,12 @@ defmodule Genex.Builder.Render.Utils do
     Path.join([project_root, pages_folder])
   end
 
+  def content_path() do
+    project_root = project_root()
+    content_folder = Application.get_env(:genex, :project, [])[:build][:content_folder]
+    Path.join([project_root, content_folder])
+  end
+
   def output_path() do
     project_root = project_root()
     output_folder = Application.get_env(:genex, :project, [])[:build][:output_folder]
@@ -31,6 +37,12 @@ defmodule Genex.Builder.Render.Utils do
     output_path = output_path()
     pages_folder = Application.get_env(:genex, :project, [])[:build][:pages_folder]
     Path.join([output_path, pages_folder])
+  end
+
+  def models_path() do
+    project_root = project_root()
+    models_folder = Application.get_env(:genex, :project, [])[:build][:models_folder]
+    Path.join([project_root, models_folder])
   end
 
   @doc """
@@ -58,6 +70,17 @@ defmodule Genex.Builder.Render.Utils do
           :unknown -> ""
         end
     )
+  end
+
+  @doc """
+  Read content file
+
+  ## Parameters
+  - path_id: the path relative to the content folder, like "2024/12/20/index.md"
+  """
+  def read_content(path_id) do
+    content_path = Path.join(content_path(), path_id)
+    File.read!(content_path)
   end
 
   def parse_meta(content) do

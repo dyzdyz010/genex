@@ -10,4 +10,5 @@ config :genex, :build,
   assets_folder: "assets",
   content_folder: "posts",
   pages_folder: "pages",
-  output_folder: ".output"
+  output_folder: ".output",
+  models_folder: "models"
