@@ -4,6 +4,13 @@ defmodule Genex.Builder.Posts do
   require Logger
 
   def prepare() do
+    # Unload all models
+    current_models()
+    |> Enum.each(fn mod ->
+      Logger.info("Unloading model: #{inspect(mod, pretty: true)}")
+      :code.purge(mod)
+    end)
+
     models_path = Utils.models_path()
     load_model_files(models_path)
 
@@ -15,6 +22,7 @@ defmodule Genex.Builder.Posts do
 
   defp load_content(models_map) do
     content_path = Utils.content_path()
+
     File.ls!(content_path)
     |> Enum.map(fn file ->
       Logger.debug("File: #{inspect(file, pretty: true)}")
@@ -36,7 +44,7 @@ defmodule Genex.Builder.Posts do
         if String.ends_with?(file, ".ex") do
           module_path = Path.join(path, file)
           Logger.info("Module path: #{inspect(module_path, pretty: true)}")
-          result = Code.require_file(module_path)
+          result = Code.compile_file(module_path)
           Logger.info("Result: #{inspect(result, pretty: true)}")
           result
         end
@@ -44,7 +52,16 @@ defmodule Genex.Builder.Posts do
     end)
   end
 
-  defp build_models_map() do
+  def current_models() do
+    :code.all_loaded()
+    |> Enum.map(fn {mod, _beamfile} -> mod end)
+    |> Enum.filter(fn mod ->
+      module_in_models? = mod |> Atom.to_string() |> String.starts_with?("Elixir.Genex.Models")
+      module_in_models? and function_exported?(mod, :name, 0)
+    end)
+  end
+
+  def build_models_map() do
     models_map =
       :code.all_loaded()
       |> Enum.map(fn {mod, _beamfile} -> mod end)

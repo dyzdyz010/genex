@@ -8,7 +8,7 @@ config :genex, :site,
 config :genex, :build,
   default_layout: "default",
   assets_folder: "assets",
-  content_folder: "posts",
+  content_folder: "content",
   pages_folder: "pages",
   output_folder: ".output",
   models_folder: "models"
