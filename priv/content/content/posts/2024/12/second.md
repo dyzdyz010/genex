@@ -1,7 +1,7 @@
 <!--
 @meta: %{
   title: "Second Post",
-  author: "John Doe",
+  author: "Jane Doe",
   date: "2024-12-24",
   collection: "physics",
   tags: ["tag1", "tag3"]

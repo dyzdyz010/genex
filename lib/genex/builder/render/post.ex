@@ -8,9 +8,18 @@ defmodule Genex.Builder.Render.PageTemplate do
     :params_schema,
     # 是否是 index.heex
     :is_index?,
-    # 模板内容
-    :layouts
+    # 模板类型（slug, 列表或固定页面)
+    :type
   ]
+
+  @type t() :: %__MODULE__{
+          abs_path: String.t(),
+          rel_path: String.t(),
+          params_schema: [atom()],
+          is_index?: boolean(),
+          # 只区分是否是详情页
+          type: :slug | :static
+        }
 end
 
 defmodule Genex.Builder.Render.Post do
@@ -24,14 +33,17 @@ defmodule Genex.Builder.Render.Post do
     # Logger.debug("Models map: #{inspect(models_map, pretty: true)}")
     # Logger.debug("Content path: #{inspect(Utils.content_path(), pretty: true)}")
     content = prepare_content(Utils.content_path(), models_map)
+
+    global_assigns = Genex.Builder.Assign.make_global_assigns(content)
+    # Logger.debug("Global assigns: #{inspect(global_assigns, pretty: true)}")
     # Logger.debug("Content: #{inspect(content, pretty: true)}")
     templates = scan_templates()
-    # Logger.debug("Templates: #{inspect(templates, pretty: true)}")
+    Logger.debug("Templates: #{inspect(templates, pretty: true)}")
 
     templates
     |> Enum.each(fn template ->
-      result = routes_for_template(template, content)
-      Logger.debug("Result: #{inspect(result, pretty: true)}")
+      result = routes_for_template(template, content, global_assigns)
+      Logger.warning("Result: #{inspect(result, pretty: true)}")
     end)
   end
 
@@ -51,7 +63,7 @@ defmodule Genex.Builder.Render.Post do
 
         Logger.debug("Model: #{inspect(model, pretty: true)}")
         post_content = File.read!(file)
-        Logger.debug("Post content: #{inspect(post_content, pretty: true)}")
+        # Logger.debug("Post content: #{inspect(post_content, pretty: true)}")
         meta = Utils.parse_meta(post_content)
         # Logger.debug("Meta: #{inspect(meta, pretty: true)}")
         meta = meta |> Map.put(:content, post_content)
@@ -84,16 +96,28 @@ defmodule Genex.Builder.Render.Post do
       params = extract_params(rel_path)
       # Logger.debug("Params: #{inspect(params, pretty: true)}")
 
+      type =
+        if Path.basename(rel_path) == "[slug].html.heex" do
+          :slug
+        else
+          :static
+        end
+
       %PageTemplate{
         abs_path: abs_path,
         rel_path: rel_path,
         params_schema: params,
-        is_index?: Path.basename(rel_path) == "index.heex"
+        is_index?: Path.basename(rel_path) == "index.heex",
+        type: type
       }
     end)
   end
 
-  def routes_for_template(%PageTemplate{params_schema: schema, rel_path: rel_path}, items) do
+  def routes_for_template(
+        %PageTemplate{params_schema: schema, rel_path: rel_path},
+        items,
+        global_assigns
+      ) do
     Logger.debug("Schema: #{inspect(schema, pretty: true)}")
 
     params_values =
@@ -130,8 +154,8 @@ defmodule Genex.Builder.Render.Post do
                 "#{value}"
               end
 
-            # Logger.debug("Field name: #{inspect(field_name, pretty: true)}")
-            # Logger.debug("Value: #{inspect(value, pretty: true)}")
+            Logger.debug("Field name: #{inspect(field_name, pretty: true)}")
+            Logger.debug("Value: #{inspect(value, pretty: true)}")
 
             value
           end)
@@ -159,25 +183,54 @@ defmodule Genex.Builder.Render.Post do
         items
         |> Enum.filter(fn item ->
           Enum.all?(schema, fn param ->
-            # 从 item 中获取 param 的值, 如果 param 是 list 类型，则检查 param_map_value 是否在 param_value 中
+            field_map = item.__struct__.field_map()
 
-            param_value = Map.get(item, param)
+            # 获取实际的字段名
+            {field_name, is_mapped} =
+              case param do
+                # slug 是特殊处理
+                :slug ->
+                  {:slug, true}
+
+                _ ->
+                  mapped = Map.get(field_map, param)
+                  if mapped, do: {mapped, true}, else: {param, false}
+              end
+
+            # 获取参数值
+            param_value =
+              case field_name do
+                :slug -> item.__struct__.slug(item)
+                _ -> Map.get(item, field_name)
+              end
 
             param_map_value = Map.get(param_map, param)
 
             cond do
-              is_list(param_value) -> param_map_value in param_value
-              true -> param_map_value == param_value
+              # 如果是映射字段且值为列表，检查是否包含
+              is_mapped and is_list(param_value) ->
+                param_map_value in List.flatten(param_value)
+
+              # 如果是映射字段，直接比较值
+              is_mapped ->
+                param_map_value == param_value
+
+              # 非映射字段，转换为字符串后比较
+              true ->
+                "#{param_map_value}" == "#{param_value}"
             end
           end)
         end)
 
-      assigns = %{items: filtered_items, params: param_map}
+      assigns =
+        global_assigns
+        |> Map.merge(%{items: filtered_items, params: param_map})
 
       %{
         page_template: rel_path,
         output_path: output_path,
-        assigns: assigns
+        assigns: assigns,
+        schema: schema
       }
     end)
   end
@@ -205,10 +258,35 @@ defmodule Genex.Builder.Render.Post do
         do: [x | y]
   end
 
+  @doc """
+  根据模板内容，生成路由
+
+  ## Parameters
+  - `rel_path`: 模板相对路径，如：
+      "posts/[year]/[month]/[day]/[slug].html.heex" 或
+      "docs/about.md"
+  - `param_map`: 参数值，如 `%{year: "2024", month: "12", day: "25", slug: "hello-world"}`
+
+  ## Returns
+
+  - 路由，如 "posts/2024/12/25/hello-world.html"
+  """
   defp build_output_path(rel_path, param_map) do
-    Enum.reduce(param_map, rel_path, fn {param, value}, acc ->
-      String.replace(acc, "[#{param}]", to_string(value))
-    end)
+    output_path =
+      Enum.reduce(param_map, rel_path, fn {param, value}, acc ->
+        String.replace(acc, "[#{param}]", to_string(value))
+      end)
+
+    if String.ends_with?(output_path, ".heex") do
+      String.replace(output_path, ".heex", "")
+    else
+      # If markdown, replace ".md" with ".html"
+      if String.ends_with?(output_path, ".md") do
+        String.replace(output_path, ".md", ".html")
+      else
+        output_path
+      end
+    end
   end
 
   defp all_params_present?(param_map) do
