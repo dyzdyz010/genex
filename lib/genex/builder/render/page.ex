@@ -1,4 +1,5 @@
 defmodule Genex.Builder.Render.Page do
+  alias Genex.Builder.Render.Layout
   alias Genex.Builder.Render.Engines.Markdown
   alias Genex.Builder.Render.Engines.Heex
   alias Genex.Builder.Render.Utils
@@ -12,8 +13,33 @@ defmodule Genex.Builder.Render.Page do
 
   require Logger
 
+  def render_template(
+        %{assigns: assigns, output_path: output_path, template_path: template_path, type: type},
+        layout_chains
+      ) do
+    Logger.debug("Assigns: #{inspect(assigns, pretty: true)}")
+    # 获取模板内容
+    content = Utils.read_template(template_path, type)
+    meta = Utils.parse_meta(content)
+    Logger.info("Meta for template #{template_path}: #{inspect(meta, pretty: true)}")
+
+    # 获取布局链
+    layout_chain = layout_chains[Path.dirname(template_path)]
+
+    Logger.info(
+      "Layout chain for template #{template_path}: #{inspect(layout_chain, pretty: true)}"
+    )
+
+    layout_chain = Layout.rewrite_layout_chain(layout_chain, meta[:layout], layout_chains)
+    Logger.info("Layout chain after rewrite: #{inspect(layout_chain, pretty: true)}")
+
+    # 应用布局
+    rendered_content = render_with_layouts(template_path, assigns, layout_chain, type: type)
+    write_to_output(output_path, rendered_content, type: type)
+  end
+
   def render(path, models: models, type: type, format: format, layouts: layouts) do
-    site = Application.get_env(:genex, :project, [])[:site]
+    site = Application.get_env(:genex, :site, [])
     site = Map.new(site)
     content = Utils.read_content(path)
     meta = Utils.parse_meta(content)
@@ -77,7 +103,7 @@ defmodule Genex.Builder.Render.Page do
     # Logger.info("Template: #{template}")
     # assigns = Map.new(assigns)
     # 添加全局配置，平铺在顶层，不要嵌套
-    site = Application.get_env(:genex, :project, [])[:site]
+    site = Application.get_env(:genex, :site, [])
     # Logger.info("Site: #{inspect(site, pretty: true)}")
     # Turn property list into a map
     site = Map.new(site)
@@ -114,6 +140,7 @@ defmodule Genex.Builder.Render.Page do
   end
 
   defp render_with_layouts(template_path, assigns, layouts_for_template, opts) do
+    # Logger.debug("Assigns: #{inspect(assigns, pretty: true)}")
     # pages_folder = Application.get_env(:genex, :project, [])[:build][:pages_folder]
     # template = Path.join([pages_folder, template])
     # Logger.debug("Template: #{template}")
@@ -127,8 +154,8 @@ defmodule Genex.Builder.Render.Page do
           # 从最内层开始渲染
           content =
             Phoenix.Template.render_to_iodata(
-              Genex.Builder.Render.View,
-              template_path,
+              Genex.Template.View,
+              template_path |> remove_extension(opts[:type]),
               "html",
               assigns
             )
@@ -150,7 +177,7 @@ defmodule Genex.Builder.Render.Page do
 
     # Save to output folder respecting the build config and template path
     # Create the output folder and all child folders if they don't exist
-    write_to_output(template_path, rendered_content, type: opts[:type])
+    rendered_content
   end
 
   def apply_layouts_for_content(content, layouts, assigns) do
@@ -178,22 +205,19 @@ defmodule Genex.Builder.Render.Page do
     rendered_content
   end
 
-  defp write_to_output(template_path, content, type: type) do
-    fullpath =
-      case type do
-        :content ->
-          Path.join([Utils.content_path(), template_path]) <> ".html"
-
-        :page ->
-          Path.join([Utils.output_path(), template_path]) <> ".html"
-      end
-
-    dir = Path.dirname(fullpath)
+  defp write_to_output(output_path, content, type: type) do
+    Logger.error("Output path: #{inspect(output_path, pretty: true)}")
+    full_path = Path.join(Utils.output_path(), output_path)
+    dir = Path.dirname(full_path)
     # If the directory doesn't exist, create it
     unless File.exists?(dir) do
       File.mkdir_p!(dir)
     end
 
-    File.write!(fullpath, content)
+    File.write!(full_path, content)
+  end
+
+  defp remove_extension(path, type) do
+    path |> String.replace(".#{type}", "")
   end
 end

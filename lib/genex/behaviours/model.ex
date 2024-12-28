@@ -18,31 +18,30 @@ defmodule Genex.Model do
 
         result = struct(__MODULE__, map)
 
-        # 从field_map中获取slug映射字段，然后处理字符串
+        # 从field_map中获取slug映射字段
         slug_field = Map.get(field_map(), :slug)
 
         final_slug =
-          final_slug =
           case Map.get(map, :slug) do
-            nil -> slug_from_name(name())
-            user_slug -> user_slug
+            nil ->
+              Map.get(map, slug_field) |> slug_from_name()
+
+            user_slug ->
+              user_slug
           end
 
-        result = result |> Map.put(:slug, final_slug)
+        result = Map.put(result, :slug, final_slug)
+
         # 如果有date字段，则解析date字段
         new_result =
           if :date in unquote(fields) do
-            # Logger.debug("Date: #{inspect(map.date, pretty: true)}")
             parsed_date = Date.from_iso8601!(map.date)
 
-            result =
-              result
-              |> Map.put(:date, parsed_date)
-              |> Map.put(:year, parsed_date.year)
-              |> Map.put(:month, parsed_date.month)
-              |> Map.put(:day, parsed_date.day)
-
             result
+            |> Map.put(:date, parsed_date)
+            |> Map.put(:year, parsed_date.year)
+            |> Map.put(:month, parsed_date.month)
+            |> Map.put(:day, parsed_date.day)
           else
             result
           end

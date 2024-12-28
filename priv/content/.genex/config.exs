@@ -6,9 +6,9 @@ config :genex, :site,
   description: "Genex is a static site generator for Phoenix."
 
 config :genex, :build,
-  default_layout: "default",
   assets_folder: "assets",
   content_folder: "content",
   pages_folder: "pages",
   output_folder: ".output",
-  models_folder: "models"
+  models_folder: "models",
+  use_index_file: false

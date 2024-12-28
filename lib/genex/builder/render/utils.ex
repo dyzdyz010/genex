@@ -11,37 +11,37 @@ defmodule Genex.Builder.Render.Utils do
 
   def assets_path() do
     project_root = project_root()
-    assets_folder = Application.get_env(:genex, :project, [])[:build][:assets_folder]
+    assets_folder = Application.get_env(:genex, :build)[:assets_folder]
     Path.join([project_root, assets_folder])
   end
 
   def pages_path() do
     project_root = project_root()
-    pages_folder = Application.get_env(:genex, :project, [])[:build][:pages_folder]
+    pages_folder = Application.get_env(:genex, :build)[:pages_folder]
     Path.join([project_root, pages_folder])
   end
 
   def content_path() do
     project_root = project_root()
-    content_folder = Application.get_env(:genex, :project, [])[:build][:content_folder]
+    content_folder = Application.get_env(:genex, :build)[:content_folder]
     Path.join([project_root, content_folder])
   end
 
   def output_path() do
     project_root = project_root()
-    output_folder = Application.get_env(:genex, :project, [])[:build][:output_folder]
+    output_folder = Application.get_env(:genex, :build)[:output_folder]
     Path.join([project_root, output_folder])
   end
 
   def output_pages_path() do
     output_path = output_path()
-    pages_folder = Application.get_env(:genex, :project, [])[:build][:pages_folder]
+    pages_folder = Application.get_env(:genex, :build)[:pages_folder]
     Path.join([output_path, pages_folder])
   end
 
   def models_path() do
     project_root = project_root()
-    models_folder = Application.get_env(:genex, :project, [])[:build][:models_folder]
+    models_folder = Application.get_env(:genex, :build)[:models_folder]
     Path.join([project_root, models_folder])
   end
 
@@ -54,22 +54,12 @@ defmodule Genex.Builder.Render.Utils do
   """
   @spec read_template(String.t(), :heex | :markdown | :html | :unknown) :: String.t()
   def read_template(template, type) do
-    project_root = project_root()
-    pages_folder = Application.get_env(:genex, :project, [])[:build][:pages_folder]
     # Logger.info("Project root: #{project_root}")
     # Logger.info("Pages folder: #{pages_folder}")
-    template_path = Path.join([project_root, pages_folder, template])
+    template_path = Path.join([pages_path(), template])
     # Find template with path but without .html.heex or .md
 
-    File.read!(
-      template_path <>
-        case type do
-          :heex -> ".html.heex"
-          :markdown -> ".md"
-          :html -> ".html"
-          :unknown -> ""
-        end
-    )
+    File.read!(template_path)
   end
 
   @doc """
@@ -109,5 +99,13 @@ defmodule Genex.Builder.Render.Utils do
 
     Regex.replace(regex, content, "")
     |> String.trim()
+  end
+
+  def cartesian_product([]), do: [[]]
+
+  def cartesian_product([h | t]) do
+    for x <- h,
+        y <- cartesian_product(t),
+        do: [x | y]
   end
 end

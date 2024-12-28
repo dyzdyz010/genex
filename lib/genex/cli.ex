@@ -17,7 +17,7 @@ defmodule Genex.Cli do
 
     # IO.puts("Running Genex commands with args: #{inspect(args, pretty: true)}")
 
-    IO.inspect(Application.get_env(:genex, :project))
+    # IO.inspect(Application.get_env(:genex, :project))
 
     args = Burrito.Util.Args.argv()
 
@@ -68,6 +68,8 @@ defmodule Genex.Cli do
   end
 
   defp print_all_commands_help do
+    intro_text()
+    IO.puts("")
     IO.puts("Usage: genex <command> [options]")
     IO.puts("\nCommands:")
 
@@ -101,12 +103,21 @@ defmodule Genex.Cli do
     case Genex.Config.load_project_config(Utils.project_root()) do
       {:ok, config} ->
         Logger.debug("Loaded project config: #{inspect(config, pretty: true)}")
-        Application.put_env(:genex, :project, config)
+
+        for {key, value} <- config do
+          Application.put_env(:genex, key, value)
+        end
+
         true
 
       {:error, error} ->
         Logger.error("Failed to load project config: #{error}")
         false
     end
+  end
+
+  defp intro_text() do
+    # Put some emoji
+    IO.puts("🌱 Genex - A static site generator for Elixir 🌱")
   end
 end

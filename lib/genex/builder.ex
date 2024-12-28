@@ -110,10 +110,13 @@ defmodule Genex.Builder do
 
   defp copy_assets() do
     output_path = Utils.output_path()
-    assets_folder = Application.get_env(:genex, :project, [])[:build][:assets_folder]
-    assets_path = Path.join([output_path, assets_folder])
-    Logger.debug("Assets path: #{assets_path}")
-    File.mkdir_p!(assets_path)
-    File.cp_r!(Utils.assets_path(), assets_path)
+    assets_folder = Application.get_env(:genex, :build)[:assets_folder]
+
+    unless assets_folder == nil do
+      assets_path = Path.join([output_path, assets_folder])
+      Logger.debug("Assets path: #{assets_path}")
+      File.mkdir_p!(assets_path)
+      File.cp_r!(Utils.assets_path(), assets_path)
+    end
   end
 end
