@@ -32,7 +32,7 @@ defmodule Genex.Builder.Render.Layout do
 
       conf when is_binary(conf) ->
         new_chain = layouts[layout_config]
-        Logger.debug("new_chain: #{inspect(new_chain)}")
+        # Logger.debug("new_chain: #{inspect(new_chain)}")
 
         if layouts_exist?(new_chain) do
           new_chain

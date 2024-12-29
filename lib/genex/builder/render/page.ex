@@ -17,13 +17,13 @@ defmodule Genex.Builder.Render.Page do
         %{assigns: assigns, output_path: output_path, template_path: template_path, type: type},
         layout_chains
       ) do
-    # Logger.debug("Assigns: #{inspect(assigns, pretty: true)}")
+    Logger.debug("Assigns: #{inspect(assigns, pretty: true)}")
     # 获取模板内容
     content = Utils.read_template(template_path, type)
 
-    if template_path == "markdown.md" do
-      Logger.warning("Content: #{inspect(content, pretty: true)}")
-    end
+    # if template_path == "markdown.md" do
+    #   Logger.warning("Content: #{inspect(content, pretty: true)}")
+    # end
 
     meta = Utils.parse_meta(content)
     Logger.info("Meta for template #{template_path}: #{inspect(meta, pretty: true)}")
@@ -45,7 +45,7 @@ defmodule Genex.Builder.Render.Page do
         :desc
       )
 
-    Logger.warning("Layout chain after rewrite: #{inspect(layout_chain, pretty: true)}")
+    # Logger.warning("Layout chain after rewrite: #{inspect(layout_chain, pretty: true)}")
 
     assigns = Map.put(assigns, :meta, meta)
 
@@ -54,62 +54,63 @@ defmodule Genex.Builder.Render.Page do
     write_to_output(output_path, rendered_content)
   end
 
-  @spec render_page(binary(), map(), [{:format, :heex | :html | :markdown | :unknown}, ...]) ::
-          String.t()
-  @doc """
-  Render a page with the given template and assigns.
+  # @spec render_page(binary(), map(), [{:format, :heex | :html | :markdown | :unknown}, ...]) ::
+  #         String.t()
+  # @doc """
+  # Render a page with the given template and assigns.
 
-  ## Parameters
-  - `template`: The path to the page template, relative to the pages folder.
-  - `opts`: A list of `keyword` options to be passed to the template.
+  # ## Parameters
+  # - `template`: The path to the page template, relative to the pages folder.
+  # - `opts`: A list of `keyword` options to be passed to the template.
 
-  ### Options
-  - `type`: The type of the template, can be `:heex`, `:markdown`, or `:html`.
+  # ### Options
+  # - `type`: The type of the template, can be `:heex`, `:markdown`, or `:html`.
 
-  ## Example
-      iex> Genex.Builder.Render.Page.render("docs/guide", layouts, type: :heex)F
-  """
-  def render_page(template_path, layouts, [format: format] \\ [format: :heex]) do
-    # Logger.info("Template: #{template}")
-    # assigns = Map.new(assigns)
-    # 添加全局配置，平铺在顶层，不要嵌套
-    site = Application.get_env(:genex, :site, [])
-    # Logger.info("Site: #{inspect(site, pretty: true)}")
-    # Turn property list into a map
-    site = Map.new(site)
+  # ## Example
+  #     iex> Genex.Builder.Render.Page.render("docs/guide", layouts, type: :heex)F
+  # """
+  # def render_page(template_path, layouts, [format: format] \\ [format: :heex]) do
+  #   # Logger.info("Template: #{template}")
+  #   # assigns = Map.new(assigns)
+  #   # 添加全局配置，平铺在顶层，不要嵌套
+  #   site = Application.get_env(:genex, :site, [])
+  #   # Logger.info("Site: #{inspect(site, pretty: true)}")
+  #   # Turn property list into a map
+  #   site = Map.new(site)
 
-    template_content = Genex.Builder.Render.Utils.read_template(template_path, format)
-    meta = Genex.Builder.Render.Utils.parse_meta(template_content)
-    Logger.info("Meta: #{inspect(meta, pretty: true)}")
+  #   template_content = Genex.Builder.Render.Utils.read_template(template_path, format)
+  #   meta = Genex.Builder.Render.Utils.parse_meta(template_content)
+  #   Logger.info("Meta: #{inspect(meta, pretty: true)}")
 
-    # 将meta添加到assigns中
-    assigns =
-      %{}
-      |> Map.put(:meta, meta)
-      |> Map.put(:site, site)
+  #   # 将meta添加到assigns中
+  #   assigns =
+  #     %{}
+  #     |> Map.put(:meta, meta)
+  #     |> Map.put(:site, site)
 
-    rendered_content = Heex.render(template_path, assigns: assigns)
+  #   rendered_content = Heex.render(template_path, assigns: assigns)
 
-    dir = Path.dirname(template_path)
-    # Logger.debug("Dir: #{dir}")
-    layouts_for_template = layouts[dir] |> Enum.reverse()
-    Logger.debug("Layouts for template: #{inspect(layouts_for_template)}")
-    # assigns = Map.put(assigns, :site, site)
-    layout_chain =
-      Genex.Builder.Render.Layout.rewrite_layout_chain(
-        layouts_for_template,
-        meta[:layout],
-        layouts
-      )
+  #   dir = Path.dirname(template_path)
+  #   # Logger.debug("Dir: #{dir}")
+  #   layouts_for_template = layouts[dir] |> Enum.reverse()
+  #   Logger.debug("Layouts for template: #{inspect(layouts_for_template)}")
+  #   # assigns = Map.put(assigns, :site, site)
+  #   layout_chain =
+  #     Genex.Builder.Render.Layout.rewrite_layout_chain(
+  #       layouts_for_template,
+  #       meta[:layout],
+  #       layouts
+  #     )
 
-    Logger.debug("Layout chain for template #{template_path}: #{inspect(layout_chain)}")
+  #   # Logger.debug("Layout chain for template #{template_path}: #{inspect(layout_chain)}")
 
-    rendered_content = apply_layouts_for_content(rendered_content, layout_chain, assigns)
+  #   rendered_content = apply_layouts_for_content(rendered_content, layout_chain, assigns)
 
-    rendered_content
-  end
+  #   rendered_content
+  # end
 
   defp render_with_layouts(template_path, assigns, layouts_for_template, opts) do
+    Logger.debug("Template type for template #{template_path}: #{inspect(opts[:type], pretty: true)}")
     # Logger.debug("Assigns: #{inspect(assigns, pretty: true)}")
     # pages_folder = Application.get_env(:genex, :project, [])[:build][:pages_folder]
     # template = Path.join([pages_folder, template])
@@ -139,8 +140,8 @@ defmodule Genex.Builder.Render.Page do
           raise "Unknown type: #{opts[:type]}"
       end
 
-    if template_path == "markdown.md" do
-      Logger.warning("Rendered content: #{inspect(rendered_content, pretty: true)}")
+    if template_path == "posts/[date.year]/[date.month]/[slug].html.heex" do
+      # Logger.error("Rendered content: #{inspect(rendered_content, pretty: true)}")
     end
 
     # Save to output folder respecting the build config and template path
@@ -169,7 +170,7 @@ defmodule Genex.Builder.Render.Page do
         {:safe, result}
       end)
 
-    # Logger.info("Rendered content: #{inspect(rendered_content)}")
+    # Logger.error("Rendered content: #{inspect(rendered_content)}")
     rendered_content
   end
 
@@ -185,7 +186,7 @@ defmodule Genex.Builder.Render.Page do
     File.write!(full_path, content)
   end
 
-  defp remove_extension(path, type) do
+  def remove_extension(path, type) do
     path |> String.replace(".#{type}", "")
   end
 end

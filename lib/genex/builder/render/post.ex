@@ -23,6 +23,8 @@ defmodule Genex.Builder.Render.PageTemplate do
 end
 
 defmodule Genex.Builder.Render.Post do
+  alias Genex.Builder.Render.Engines.Markdown
+  alias Genex.Builder.Render.Engine
   alias Genex.Builder.Render.Layout
   alias Genex.Builder.Render.Page
   alias Genex.Builder.Render.PageTemplate
@@ -38,8 +40,12 @@ defmodule Genex.Builder.Render.Post do
     # Logger.debug("Content path: #{inspect(Utils.content_path(), pretty: true)}")
     content = prepare_content(Utils.content_path(), models_map)
 
+    field_values = collect_field_values(content)
+    Logger.debug("Field values: #{inspect(field_values, pretty: true)}")
+
+    # Logger.debug("Content: #{inspect(content, pretty: true)}")
     global_assigns = Genex.Builder.Assign.make_global_assigns(content)
-    # Logger.debug("Global assigns: #{inspect(global_assigns, pretty: true)}")
+    Logger.debug("Global assigns: #{inspect(global_assigns, pretty: true)}")
     # Logger.debug("Content: #{inspect(content, pretty: true)}")
     templates = scan_templates()
     # Logger.debug("Templates: #{inspect(templates, pretty: true)}")
@@ -51,12 +57,14 @@ defmodule Genex.Builder.Render.Post do
       end)
       |> List.flatten()
 
+    # Logger.warning("Result: #{inspect(result, pretty: true)}")
+
     Logger.warning(
-      "Result: #{inspect(result |> Enum.filter(fn x -> x.template_path == "markdown.md" end), pretty: true)}"
+      "Result: #{inspect(result |> Enum.filter(fn x -> x.template_path == "posts/[date.year]/[date.month]/[slug].html.heex" end), pretty: true)}"
     )
 
     layout_chains = Layout.generate_layout_chains()
-    Logger.debug("Layout chains: #{inspect(layout_chains, pretty: true)}")
+    # Logger.debug("Layout chains: #{inspect(layout_chains, pretty: true)}")
 
     Genex.Builder.Render.View.gen_view_module()
 
@@ -87,8 +95,10 @@ defmodule Genex.Builder.Render.Post do
         post_content = File.read!(file)
         # Logger.debug("Post content: #{inspect(post_content, pretty: true)}")
         meta = Utils.parse_meta(post_content)
+
+        rendered_content = Markdown.render_content(post_content)
         # Logger.debug("Meta: #{inspect(meta, pretty: true)}")
-        meta = meta |> Map.put(:content, post_content)
+        meta = meta |> Map.put(:content, {:safe, rendered_content})
         data = model.model_from_map(meta)
         data
         # Logger.debug("Data: #{inspect(data, pretty: true)}")
@@ -190,7 +200,7 @@ defmodule Genex.Builder.Render.Post do
               value =
                 case field_name do
                   :slug -> item.__struct__.slug(item)
-                  _ -> Map.get(item, field_name)
+                  _ -> attr_resolve(item, field_name)
                 end
 
               # value = "#{value}"
@@ -221,7 +231,7 @@ defmodule Genex.Builder.Render.Post do
 
       # params_values
       combinations = params_values |> generate_combinations()
-      # Logger.debug("Combinations: #{inspect(combinations, pretty: true)}")
+      Logger.debug("Combinations: #{inspect(combinations, pretty: true)}")
 
       combinations
       |> Enum.flat_map(fn param_map ->
@@ -243,17 +253,19 @@ defmodule Genex.Builder.Render.Post do
                     if mapped, do: {mapped, true}, else: {param, false}
                 end
 
+              # Logger.debug("Field name: #{inspect(field_name, pretty: true)}")
+
               # 获取参数值
               param_value =
                 case field_name do
                   :slug -> item.__struct__.slug(item)
-                  _ -> Map.get(item, field_name)
+                  _ -> attr_resolve(item, field_name)
                 end
 
-              param_map_value = Map.get(param_map, param)
+              param_map_value = attr_resolve(param_map, param)
 
-              # Logger.debug("Param map value: #{inspect(param_map_value, pretty: true)}")
-              # Logger.debug("Param value: #{inspect(param_value, pretty: true)}")
+              Logger.debug("Param map value: #{inspect(param_map_value, pretty: true)}")
+              Logger.debug("Param value: #{inspect(param_value, pretty: true)}")
 
               cond do
                 # 如果是映射字段且值为列表，检查是否包含
@@ -385,10 +397,13 @@ defmodule Genex.Builder.Render.Post do
       # seg可能是 "[year]" or "[slug].heex" etc
       # 先去掉可能的 ".heex" 后缀
       seg
-      |> String.split(".")
-      |> hd()
+      |> Page.remove_extension(:heex)
+      |> Page.remove_extension(:md)
+      |> Page.remove_extension(:html)
+      # |> hd()
       |> case do
         "[" <> rest ->
+          # Logger.debug("Rest: #{inspect(rest |> String.trim_trailing("]"), pretty: true)}")
           # "[year]" => "year]"
           String.trim_trailing(rest, "]") |> String.to_atom() |> List.wrap()
 
@@ -396,5 +411,52 @@ defmodule Genex.Builder.Render.Post do
           []
       end
     end)
+  end
+
+  def collect_field_values(items) do
+    items
+    |> Enum.group_by(fn item -> item.__struct__.folder |> String.to_atom() end)
+    |> Enum.map(fn {model, items} ->
+      field_values =
+        Enum.reduce(items, %{}, fn item, acc ->
+          item_fields = Map.from_struct(item)
+
+          Enum.reduce(item_fields, acc, fn {field, value}, acc_inner ->
+            if field in [:__struct__, :__meta__] do
+              acc_inner
+            else
+              values = Map.get(acc_inner, field, [])
+
+              updated_values =
+                case value do
+                  # 处理列表值
+                  v when is_list(v) -> values ++ v
+                  v -> [v | values]
+                end
+                |> Enum.uniq()
+
+              Map.put(acc_inner, field, updated_values)
+            end
+          end)
+        end)
+
+      {model, field_values}
+    end)
+    |> Enum.into(%{})
+  end
+
+  def attr_resolve(data, path) do
+    Logger.debug("Path: #{inspect(path, pretty: true)}")
+    Logger.debug("Data: #{inspect(data, pretty: true)}")
+
+    if data |> Map.has_key?(path) do
+      data |> Map.get(path)
+    else
+      path
+      |> Atom.to_string()
+      |> String.split(".")
+      |> Enum.map(&String.to_existing_atom/1)
+      |> Enum.reduce(data, &Map.get(&2, &1))
+    end
   end
 end

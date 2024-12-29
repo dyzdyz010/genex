@@ -8,7 +8,7 @@ defmodule Genex.Model do
 
   defmacro __using__(name: name, folder: folder, fields: fields) do
     quote do
-      defstruct(unquote(fields) ++ [:year, :month, :day, :slug])
+      defstruct(unquote(fields) ++ [:slug])
       def name, do: unquote(name)
       def folder, do: unquote(folder)
       def fields, do: unquote(fields)
@@ -39,9 +39,6 @@ defmodule Genex.Model do
 
             result
             |> Map.put(:date, parsed_date)
-            |> Map.put(:year, parsed_date.year)
-            |> Map.put(:month, parsed_date.month)
-            |> Map.put(:day, parsed_date.day)
           else
             result
           end

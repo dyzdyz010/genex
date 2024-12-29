@@ -23,7 +23,7 @@ defmodule Genex.Application do
     @impl true
     def handle_info(:run_task, state) do
       Genex.Cli.run()
-      System.stop()
+      # System.stop()
       {:noreply, state}
     end
   end

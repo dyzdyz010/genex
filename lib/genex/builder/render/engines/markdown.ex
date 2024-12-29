@@ -11,6 +11,10 @@ defmodule Genex.Builder.Render.Engines.Markdown do
     MDEx.to_html!(content, render: [unsafe_: true])
   end
 
+  def render_content(content) do
+    MDEx.to_html!(content, render: [unsafe_: true])
+  end
+
   @impl true
   def type() do
     :markdown
