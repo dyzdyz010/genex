@@ -12,6 +12,7 @@ defmodule Genex.Builder.Render.View do
     quote do
       defmodule Genex.Template.View do
         alias Genex.Builder.Render.CoreComponents
+        # import Genex.Helper.General
 
         use Phoenix.View,
           root: unquote(pages_path),
@@ -19,6 +20,17 @@ defmodule Genex.Builder.Render.View do
           namespace: Genex.Template
 
         import Genex.Builder.Render.CoreComponents
+
+        def title(site, meta) do
+          base = site.title
+          title = meta[:title]
+
+          if title != nil do
+            "#{base} | #{title}"
+          else
+            base
+          end
+        end
       end
     end
     |> Code.compile_quoted()

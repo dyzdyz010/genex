@@ -45,6 +45,18 @@ defmodule Genex.Builder.Render.Utils do
     Path.join([project_root, models_folder])
   end
 
+  def helpers_path() do
+    project_root = project_root()
+    helpers_folder = Application.get_env(:genex, :build)[:helpers_folder]
+    Path.join([project_root, helpers_folder])
+  end
+
+  def components_path() do
+    project_root = project_root()
+    components_folder = Application.get_env(:genex, :build)[:components_folder]
+    Path.join([project_root, components_folder])
+  end
+
   @doc """
   Read template file
 

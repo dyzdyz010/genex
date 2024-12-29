@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{@site.title}</title>
+    <title><%= title(@site, @meta) %></title>
     <meta name="description" content={@site.description} />
     <link rel="stylesheet" href={"/assets/style.css"} />
   </head>
@@ -13,6 +13,7 @@
       <h1>全局导航栏</h1>
     </nav>
     <main>
+      <h2>{greet("World")}</h2>
       <%= @inner_content %>
     </main>
     <footer>

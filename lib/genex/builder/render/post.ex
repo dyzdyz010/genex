@@ -31,16 +31,18 @@ defmodule Genex.Builder.Render.Post do
   require Logger
 
   def build() do
+    Genex.Builder.clean()
+
     models_map = Genex.Builder.Posts.prepare()
     Logger.debug("Models map: #{inspect(models_map, pretty: true)}")
     # Logger.debug("Content path: #{inspect(Utils.content_path(), pretty: true)}")
     content = prepare_content(Utils.content_path(), models_map)
 
     global_assigns = Genex.Builder.Assign.make_global_assigns(content)
-    Logger.debug("Global assigns: #{inspect(global_assigns, pretty: true)}")
+    # Logger.debug("Global assigns: #{inspect(global_assigns, pretty: true)}")
     # Logger.debug("Content: #{inspect(content, pretty: true)}")
     templates = scan_templates()
-    Logger.debug("Templates: #{inspect(templates, pretty: true)}")
+    # Logger.debug("Templates: #{inspect(templates, pretty: true)}")
 
     result =
       templates
@@ -50,7 +52,7 @@ defmodule Genex.Builder.Render.Post do
       |> List.flatten()
 
     Logger.warning(
-      "Result: #{inspect(result |> Enum.filter(fn x -> x.assigns[:item] == nil end), pretty: true)}"
+      "Result: #{inspect(result |> Enum.filter(fn x -> x.template_path == "markdown.md" end), pretty: true)}"
     )
 
     layout_chains = Layout.generate_layout_chains()
@@ -97,7 +99,7 @@ defmodule Genex.Builder.Render.Post do
     #   item.__struct__.folder()
     # end)
 
-    Logger.debug("Data: #{inspect(data, pretty: true)}")
+    # Logger.debug("Data: #{inspect(data, pretty: true)}")
     data
   end
 

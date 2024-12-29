@@ -5,11 +5,11 @@ defmodule Genex.Builder.Posts do
 
   def prepare() do
     # Unload all models
-    current_models()
-    |> Enum.each(fn mod ->
-      Logger.info("Unloading model: #{inspect(mod, pretty: true)}")
-      :code.purge(mod)
-    end)
+    # current_models()
+    # |> Enum.each(fn mod ->
+    #   Logger.info("Unloading model: #{inspect(mod, pretty: true)}")
+    #   :code.purge(mod)
+    # end)
 
     models_path = Utils.models_path()
     load_model_files(models_path)

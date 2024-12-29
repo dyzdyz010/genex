@@ -12,7 +12,7 @@ defmodule Genex.Builder do
     build_pages(layouts)
   end
 
-  defp clean() do
+  def clean() do
     IO.puts("#{IO.ANSI.green()}Start cleaning site...")
     output_folder = Utils.output_path()
     File.rm_rf!(output_folder)

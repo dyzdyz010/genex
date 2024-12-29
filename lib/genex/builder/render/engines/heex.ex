@@ -10,14 +10,11 @@ defmodule Genex.Builder.Render.Engines.Heex do
   #   namespace: Genex.Builder.Render.Engines
 
   @impl Genex.Builder.Render.Engine
-  def render(path, opts) do
-    view_module = Genex.Builder.Render.View.gen_view_module()
-    Logger.info("View module: #{inspect(view_module, pretty: true)}")
-
-    assigns = opts[:assigns]
+  def render(path, assigns: assigns) do
+    Logger.info("View module: #{inspect(Genex.Template.View, pretty: true)}")
 
     rendered_content =
-      Phoenix.Template.render_to_iodata(view_module, path, "html", assigns)
+      Phoenix.Template.render_to_iodata(Genex.Template.View, path, "html", assigns)
 
     rendered_content
   end
