@@ -17,7 +17,7 @@ defmodule Genex.Builder.Render.Page do
         %{assigns: assigns, output_path: output_path, template_path: template_path, type: type},
         layout_chains
       ) do
-    Logger.debug("Assigns: #{inspect(assigns, pretty: true)}")
+    # Logger.debug("Assigns: #{inspect(assigns, pretty: true)}")
     # 获取模板内容
     content = Utils.read_template(template_path, type)
 

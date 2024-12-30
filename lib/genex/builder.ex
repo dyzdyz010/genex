@@ -7,7 +7,7 @@ defmodule Genex.Builder do
     clean()
     copy_assets()
     layouts = build_layouts()
-    models_map = Genex.Builder.Posts.prepare()
+    models_map = Genex.Builder.Model.prepare()
     build_posts(models_map)
     build_pages(layouts)
   end
@@ -15,7 +15,12 @@ defmodule Genex.Builder do
   def clean() do
     IO.puts("#{IO.ANSI.green()}Start cleaning site...")
     output_folder = Utils.output_path()
-    File.rm_rf!(output_folder)
+    # Empty the output folder
+    for file <- File.ls!(output_folder) do
+      File.rm_rf!(Path.join(output_folder, file))
+    end
+
+    File.mkdir_p!(output_folder)
   end
 
   defp build_pages(layouts) do

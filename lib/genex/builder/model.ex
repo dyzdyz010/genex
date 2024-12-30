@@ -1,4 +1,4 @@
-defmodule Genex.Builder.Posts do
+defmodule Genex.Builder.Model do
   alias Genex.Builder.Render.Utils
 
   require Logger

@@ -23,8 +23,8 @@ defmodule Genex.Builder.Render.PageTemplate do
 end
 
 defmodule Genex.Builder.Render.Post do
+  alias Genex.Builder.Assign
   alias Genex.Builder.Render.Engines.Markdown
-  alias Genex.Builder.Render.Engine
   alias Genex.Builder.Render.Layout
   alias Genex.Builder.Render.Page
   alias Genex.Builder.Render.PageTemplate
@@ -35,42 +35,49 @@ defmodule Genex.Builder.Render.Post do
   def build() do
     Genex.Builder.clean()
 
-    models_map = Genex.Builder.Posts.prepare()
-    Logger.debug("Models map: #{inspect(models_map, pretty: true)}")
+    models_map = Genex.Builder.Model.prepare()
+    # Logger.debug("Models map: #{inspect(models_map, pretty: true)}")
     # Logger.debug("Content path: #{inspect(Utils.content_path(), pretty: true)}")
     content = prepare_content(Utils.content_path(), models_map)
 
-    field_values = collect_field_values(content)
-    Logger.debug("Field values: #{inspect(field_values, pretty: true)}")
-
     # Logger.debug("Content: #{inspect(content, pretty: true)}")
     global_assigns = Genex.Builder.Assign.make_global_assigns(content)
-    Logger.debug("Global assigns: #{inspect(global_assigns, pretty: true)}")
-    # Logger.debug("Content: #{inspect(content, pretty: true)}")
+    # Logger.debug("Global assigns: #{inspect(global_assigns, pretty: true)}")
+    # # Logger.debug("Content: #{inspect(content, pretty: true)}")
     templates = scan_templates()
     # Logger.debug("Templates: #{inspect(templates, pretty: true)}")
 
-    result =
+    routes =
       templates
       |> Enum.map(fn template ->
         routes_for_template(template, content, global_assigns)
       end)
       |> List.flatten()
 
-    # Logger.warning("Result: #{inspect(result, pretty: true)}")
+    # Logger.warning("Routes: #{inspect(routes, pretty: true)}")
+
+    {global_assigns, routes} = update_links(global_assigns, routes)
+    routes = resolve_single_item(routes)
 
     Logger.warning(
-      "Result: #{inspect(result |> Enum.filter(fn x -> x.template_path == "posts/[date.year]/[date.month]/[slug].html.heex" end), pretty: true)}"
+      "Routes: #{inspect(routes |> Enum.filter(fn x -> x.template_path == "posts/[collection]/index.html.heex" end), pretty: true)}"
     )
+
+    # Logger.debug("Global assigns: #{inspect(global_assigns, pretty: true)}")
 
     layout_chains = Layout.generate_layout_chains()
     # Logger.debug("Layout chains: #{inspect(layout_chains, pretty: true)}")
 
     Genex.Builder.Render.View.gen_view_module()
 
-    result
+    routes
     |> Enum.map(fn x ->
-      Page.render_template(x, layout_chains)
+      assigns = x.assigns
+
+      Page.render_template(
+        x |> Map.put(:assigns, assigns |> Map.merge(global_assigns)),
+        layout_chains
+      )
     end)
 
     :ok
@@ -164,7 +171,7 @@ defmodule Genex.Builder.Render.Post do
         %{
           template_path: rel_path,
           output_path: build_output_path(rel_path, %{}),
-          assigns: global_assigns,
+          assigns: %{data: %{items: [], fields: %{}}, params: %{}},
           schema: [],
           type: template_type
         }
@@ -174,7 +181,7 @@ defmodule Genex.Builder.Render.Post do
 
       # 获取模型文件夹名
       model_folder = rel_path |> String.split("/") |> List.first()
-      model_items = global_assigns.content[model_folder |> String.to_atom()]
+      model_items = global_assigns.content[model_folder |> String.to_atom()][:items]
 
       Logger.debug("Model folder: #{inspect(model_folder, pretty: true)}")
 
@@ -296,26 +303,22 @@ defmodule Genex.Builder.Render.Post do
         # Logger.debug("Param map: #{inspect(param_map, pretty: true)}")
         output_path = build_output_path(rel_path, param_map)
 
-        # 过滤符合条件的数据项
+        field_values = Assign.collect_field_values(filtered_items)
 
-        # Logger.debug("Filtered items: #{inspect(filtered_items, pretty: true)}")
+        specific_assigns = %{
+          data: %{
+            items: filtered_items,
+            fields: field_values
+          },
+          params: param_map
+        }
 
-        # 如果是[slug]模板，则为item，否则为items
-        specific_assigns =
-          if Path.basename(rel_path) == "[slug].html.heex" do
-            %{item: filtered_items |> List.first(), params: param_map}
-          else
-            %{items: filtered_items, params: param_map}
-          end
-
-        assigns =
-          global_assigns
-          |> Map.merge(specific_assigns)
+        Logger.debug("Specific assigns: #{inspect(specific_assigns, pretty: true)}")
 
         %{
           template_path: rel_path,
           output_path: output_path,
-          assigns: assigns,
+          assigns: specific_assigns,
           schema: schema,
           type: template_type
         }
@@ -364,7 +367,8 @@ defmodule Genex.Builder.Render.Post do
   defp build_output_path(rel_path, param_map) do
     output_path =
       Enum.reduce(param_map, rel_path, fn {param, value}, acc ->
-        String.replace(acc, "[#{param}]", to_string(value))
+        # URL转义
+        String.replace(acc, "[#{param}]", to_string(value |> url_escape()))
       end)
 
     output_path =
@@ -413,38 +417,6 @@ defmodule Genex.Builder.Render.Post do
     end)
   end
 
-  def collect_field_values(items) do
-    items
-    |> Enum.group_by(fn item -> item.__struct__.folder |> String.to_atom() end)
-    |> Enum.map(fn {model, items} ->
-      field_values =
-        Enum.reduce(items, %{}, fn item, acc ->
-          item_fields = Map.from_struct(item)
-
-          Enum.reduce(item_fields, acc, fn {field, value}, acc_inner ->
-            if field in [:__struct__, :__meta__] do
-              acc_inner
-            else
-              values = Map.get(acc_inner, field, [])
-
-              updated_values =
-                case value do
-                  # 处理列表值
-                  v when is_list(v) -> values ++ v
-                  v -> [v | values]
-                end
-                |> Enum.uniq()
-
-              Map.put(acc_inner, field, updated_values)
-            end
-          end)
-        end)
-
-      {model, field_values}
-    end)
-    |> Enum.into(%{})
-  end
-
   def attr_resolve(data, path) do
     Logger.debug("Path: #{inspect(path, pretty: true)}")
     Logger.debug("Data: #{inspect(data, pretty: true)}")
@@ -458,5 +430,113 @@ defmodule Genex.Builder.Render.Post do
       |> Enum.map(&String.to_existing_atom/1)
       |> Enum.reduce(data, &Map.get(&2, &1))
     end
+  end
+
+  def update_links(global_assigns, routes) do
+    links_by_slug =
+      routes
+      |> Enum.filter(fn x -> x.template_path |> String.ends_with?("[slug].html.heex") end)
+      |> Enum.reduce(%{}, fn x, acc ->
+        output_path = x.output_path
+        assigns = x.assigns
+
+        items =
+          cond do
+            Map.has_key?(assigns, :data) and Map.has_key?(assigns.data, :item) ->
+              [assigns.data.item]
+
+            Map.has_key?(assigns, :data) and Map.has_key?(assigns.data, :items) ->
+              assigns.data.items
+
+            true ->
+              []
+          end
+
+        Enum.reduce(items, acc, fn item, acc_inner ->
+          Map.put(acc_inner, item.slug, output_path)
+        end)
+      end)
+
+    Logger.warning("Links by slug: #{inspect(links_by_slug, pretty: true)}")
+
+    # 更新global_assigns中的content
+    updated_content =
+      Enum.map(global_assigns.content, fn {folder, folder_content} ->
+        items = folder_content.items
+
+        updated_items =
+          update_content_with_links(items, links_by_slug)
+
+        {folder, Map.put(folder_content, :items, updated_items)}
+      end)
+      |> Enum.into(%{})
+
+    global_assigns = Map.put(global_assigns, :content, updated_content)
+
+    routes =
+      routes
+      |> Enum.map(fn route ->
+        unless route.assigns.data.items == [] do
+          assigns = route.assigns
+          # Logger.debug("Assigns: #{inspect(assigns, pretty: true)}")
+
+          items = assigns.data.items |> update_content_with_links(links_by_slug)
+
+          assigns_data = assigns.data |> Map.put(:items, items)
+
+          route
+          |> Map.put(:assigns, assigns |> Map.put(:data, assigns_data))
+        else
+          route
+        end
+      end)
+
+    {global_assigns, routes}
+  end
+
+  def update_content_with_links(items, links_by_slug) do
+    items
+    |> Enum.map(fn item ->
+      case Map.get(links_by_slug, item.slug) do
+        nil -> item
+        link -> Map.put(item, :link, link)
+      end
+    end)
+  end
+
+  def resolve_single_item(routes) do
+    routes
+    |> Enum.map(fn route ->
+      assigns = route.assigns
+
+      unless assigns == nil do
+        specific_assigns =
+          if Path.basename(route.template_path) == "[slug].html.heex" do
+            %{data: %{item: assigns.data.items |> List.first()}, params: assigns.params}
+          else
+            %{
+              data: %{items: assigns.data.items, fields: assigns.data.fields},
+              params: assigns.params
+            }
+          end
+
+        route |> Map.delete(:assigns) |> Map.put(:assigns, specific_assigns)
+      else
+        route
+      end
+    end)
+  end
+
+  defp url_escape(value) do
+    # 空格变-，小写，其他特殊字符全部去掉
+    value =
+      value
+      |> String.downcase()
+      |> String.replace(" ", "-")
+
+    # Use regex
+    value = Regex.replace(~r/[^a-z0-9-]+/, value, "")
+
+    value
   end
 end

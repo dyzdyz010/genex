@@ -1,0 +1,8 @@
+<h1>Author: <%= @params.author %></h1>
+
+<h2>Posts</h2>
+<div class="flex flex-col gap-2">
+  <a :for={post <- @data.items} href={post.link}>
+    <h1>{post.title}</h1>
+  </a>
+</div>
