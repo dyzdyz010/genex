@@ -57,6 +57,12 @@ defmodule Genex.Builder.Render.Utils do
     Path.join([project_root, components_folder])
   end
 
+  def hooks_path() do
+    project_root = project_root()
+    hooks_folder = Application.get_env(:genex, :hooks)[:folder]
+    Path.join([project_root, hooks_folder])
+  end
+
   @doc """
   Read template file
 
@@ -119,5 +125,9 @@ defmodule Genex.Builder.Render.Utils do
     for x <- h,
         y <- cartesian_product(t),
         do: [x | y]
+  end
+
+  def remove_extension(path, type) do
+    path |> String.replace(".#{type}", "")
   end
 end

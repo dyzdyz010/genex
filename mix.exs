@@ -28,7 +28,23 @@ defmodule Genex.MixProject do
         burrito: [
           targets: [
             macos: [os: :darwin, cpu: :arm64],
-            linux: [os: :linux, cpu: :x86_64],
+            # 降低fortify级别
+            linux: [
+              os: :linux,
+              cpu: :x86_64,
+              nif_cxxflags: "-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -O2",
+              nif_env: [
+                {"CXXFLAGS", "-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -O2"},
+                {"CFLAGS", "-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -O2"},
+                {"LDFLAGS", "-static-libstdc++ -static-libgcc"}
+              ],
+              # 添加系统库依赖
+              system_libs: [
+                "/lib/x86_64-linux-gnu/libstdc++.so.6",
+                "/lib/x86_64-linux-gnu/libc.so.6",
+                "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1"
+              ]
+            ],
             windows: [os: :windows, cpu: :x86_64]
           ]
         ]
@@ -39,7 +55,7 @@ defmodule Genex.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:mdex, "~> 0.2"},
+      {:mdex, "~> 0.3"},
       {:burrito, "~> 1.0"},
       {:phoenix_live_view, "~> 1.0"},
       {:phoenix_html, "~> 4.1"},

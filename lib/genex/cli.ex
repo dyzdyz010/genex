@@ -7,13 +7,12 @@ defmodule Genex.Cli do
     Genex.Cli.Commands.Build
   ]
 
+  def main(args) do
+    IO.puts("Running Genex commands with args: #{inspect(args, pretty: true)}")
+  end
+
   def run() do
     # Detect if we are in a Genex project by checking if the .genex/config.exs file exists
-    unless load_project_config() do
-      IO.puts("Not in a Genex project")
-      # Stop the application gracefully if we are not in a Genex project
-      Application.stop(:genex)
-    end
 
     # IO.puts("Running Genex commands with args: #{inspect(args, pretty: true)}")
 
@@ -38,13 +37,19 @@ defmodule Genex.Cli do
     end
   end
 
-  defp parse_args([]), do: {nil, [], []}
+  def parse_args([]), do: {nil, [], []}
 
-  defp parse_args([maybe_command | rest]) do
+  def parse_args([maybe_command | rest]) do
     {opts, extra, invalid} =
       OptionParser.parse(rest,
-        strict: [output_dir: :string, verbose: :boolean, port: :integer, watch_dir: :string],
-        aliases: [h: :help, o: :output_dir, v: :verbose, p: :port, w: :watch_dir]
+        strict: [
+          output_dir: :string,
+          verbose: :boolean,
+          port: :integer,
+          watch_dir: :string,
+          name: :string
+        ],
+        aliases: [h: :help, o: :output_dir, v: :verbose, p: :port, w: :watch_dir, n: :name]
       )
 
     if invalid != [] do
@@ -55,19 +60,19 @@ defmodule Genex.Cli do
     {maybe_command, opts, extra}
   end
 
-  defp run_command(command_name, opts, args) do
+  def run_command(command_name, opts, args) do
     case Enum.find(@commands, fn cmd -> cmd.name() == command_name end) do
       nil ->
         IO.puts("Unknown command: #{command_name}")
         print_all_commands_help()
-        System.halt(1)
+        System.stop()
 
       cmd_mod ->
         cmd_mod.run(opts, args)
     end
   end
 
-  defp print_all_commands_help do
+  def print_all_commands_help do
     intro_text()
     IO.puts("")
     IO.puts("Usage: genex <command> [options]")
@@ -80,7 +85,7 @@ defmodule Genex.Cli do
     IO.puts("\nRun `genex help <command>` for details on a specific command.")
   end
 
-  defp show_command_help(command_name) do
+  def show_command_help(command_name) do
     case Enum.find(@commands, fn cmd -> cmd.name() == command_name end) do
       nil ->
         IO.puts("No such command: #{command_name}")
@@ -97,7 +102,7 @@ defmodule Genex.Cli do
   #   File.exists?(Path.join([project_root, ".genex/config.exs"]))
   # end
 
-  defp load_project_config() do
+  def load_project_config() do
     # Get current directory
 
     case Genex.Config.load_project_config(Utils.project_root()) do

@@ -1,48 +1,84 @@
 defmodule Genex.Builder do
   require Logger
+  alias Genex.Builder.Render.Page
+  alias Genex.Builder.Content
+  alias Genex.Builder.Route
+  alias Genex.Builder.Scanner
   alias Genex.Builder.Render.Utils
 
   def build() do
-    IO.puts("#{IO.ANSI.green()}Start building site...")
+    IO.puts("#{IO.ANSI.yellow()}Start building site...")
+    Logger.debug("Project root: #{Utils.project_root()}")
     clean()
-    copy_assets()
-    layouts = build_layouts()
+    Genex.Hook.run_pre_hooks()
     models_map = Genex.Builder.Model.prepare()
-    build_posts(models_map)
-    build_pages(layouts)
+
+    global_content = Scanner.scan_content(Utils.content_path(), models_map)
+    global_assigns = Genex.Builder.Assign.make_global_assigns(global_content)
+    templates = Scanner.scan_templates()
+
+    routes =
+      make_routes(templates, global_content, global_assigns)
+
+    {global_assigns, routes} = Content.update_links(global_assigns, routes)
+    routes = resolve_single_item(routes)
+
+    layouts = build_layouts()
+
+    render_routes(routes, global_assigns, layouts)
+
+    Genex.Hook.run_post_hooks()
+    copy_assets()
+
+    IO.puts("#{IO.ANSI.green()}Build site finished")
   end
 
   def clean() do
     IO.puts("#{IO.ANSI.green()}Start cleaning site...")
     output_folder = Utils.output_path()
-    # Empty the output folder
-    for file <- File.ls!(output_folder) do
-      File.rm_rf!(Path.join(output_folder, file))
+
+    if File.exists?(output_folder) do
+      # Empty the output folder
+      for file <- File.ls!(output_folder) do
+        File.rm_rf!(Path.join(output_folder, file))
+      end
     end
 
     File.mkdir_p!(output_folder)
   end
 
-  defp build_pages(layouts) do
-    IO.puts("#{IO.ANSI.green()}Start building pages...")
-    scan_and_build_pages(Utils.pages_path(), layouts)
+  defp make_routes(templates, full_content, global_assigns) do
+    routes =
+      templates
+      |> Enum.map(fn template ->
+        Route.routes_for_template(template, full_content, global_assigns)
+      end)
+      |> List.flatten()
+
+    Logger.debug("Routes: #{inspect(routes, pretty: true)}")
+
+    routes
   end
 
-  defp build_posts(models_map) do
-    IO.puts("#{IO.ANSI.green()}Start building posts...")
-    build_posts_in_dir(Utils.content_path(), models_map)
-  end
+  def resolve_single_item(routes) do
+    routes
+    |> Enum.map(fn route ->
+      assigns = route.assigns
 
-  defp build_posts_in_dir(dir_path, models_map) do
-    File.ls!(dir_path)
-    |> Enum.each(fn file ->
-      if File.dir?(file) do
-        build_posts_in_dir(Path.join(dir_path, file), models_map)
+      unless assigns == nil do
+        specific_assigns =
+          if Path.basename(route.template_path) == "[slug].html.heex" do
+            %{data: %{item: assigns.data.items |> List.first()}, params: assigns.params}
+          else
+            %{
+              data: %{items: assigns.data.items, fields: assigns.data.fields},
+              params: assigns.params
+            }
+          end
+
+        route |> Map.delete(:assigns) |> Map.put(:assigns, specific_assigns)
       else
-        if String.ends_with?(file, ".md") do
-          path = Path.join(dir_path, file)
-          Genex.Builder.Render.Page.render_content(path, models: models_map)
-        end
+        route
       end
     end)
   end
@@ -50,67 +86,6 @@ defmodule Genex.Builder do
   defp build_layouts() do
     Logger.debug("Start building layouts...")
     Genex.Builder.Render.Layout.generate_layout_chains()
-  end
-
-  defp scan_and_build_pages(dir_path, layouts) do
-    case File.ls(dir_path) do
-      {:ok, files} ->
-        Enum.each(files, fn file ->
-          full_path = Path.join(dir_path, file)
-          Logger.info("Full path: #{full_path}")
-
-          if File.dir?(full_path) do
-            scan_and_build_pages(full_path, layouts)
-          else
-            if is_actual_page(file) do
-              # Logger.debug("file: #{file}")
-              template = Path.relative_to(full_path, Utils.pages_path())
-              # Logger.debug("Template: #{template}")
-
-              Genex.Builder.Render.Page.render_page(
-                remove_extension(template, template_type(template)),
-                layouts,
-                type: template_type(template)
-              )
-            end
-          end
-        end)
-    end
-  end
-
-  defp template_type(filename) do
-    cond do
-      String.ends_with?(filename, ".html.heex") -> :heex
-      String.ends_with?(filename, ".md") -> :markdown
-      String.ends_with?(filename, ".html") -> :html
-      true -> :unknown
-    end
-  end
-
-  defp remove_extension(filename, type) do
-    String.replace(
-      filename,
-      case type do
-        :heex ->
-          ".html.heex"
-
-        :markdown ->
-          ".md"
-
-        :html ->
-          ".html"
-
-        _ ->
-          filename |> String.split(".") |> List.last()
-      end,
-      ""
-    )
-  end
-
-  defp is_actual_page(filename) do
-    not String.starts_with?(filename, "__") and
-      not String.starts_with?(filename, ".") and
-      not String.starts_with?(filename, "[")
   end
 
   defp copy_assets() do
@@ -123,5 +98,19 @@ defmodule Genex.Builder do
       File.mkdir_p!(assets_path)
       File.cp_r!(Utils.assets_path(), assets_path)
     end
+  end
+
+  defp render_routes(routes, global_assigns, layout_chains) do
+    Genex.Builder.Render.View.gen_view_module()
+
+    routes
+    |> Enum.each(fn x ->
+      assigns = x.assigns
+
+      Page.render_template(
+        x |> Map.put(:assigns, assigns |> Map.merge(global_assigns)),
+        layout_chains
+      )
+    end)
   end
 end

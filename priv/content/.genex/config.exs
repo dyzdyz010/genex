@@ -13,4 +13,9 @@ config :genex, :build,
   models_folder: "models",
   helpers_folder: "helpers",
   components_folder: "components",
-  use_index_file: false
+  use_index_file: true
+
+config :genex, :hooks,
+  folder: "hooks",
+  pre: ["pre.exs"],
+  post: ["post.exs"]

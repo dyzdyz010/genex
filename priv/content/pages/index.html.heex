@@ -5,7 +5,14 @@
 <h3>Posts</h3>
 <div class="flex flex-col gap-2">
   <a :for={post <- @content.posts.items} href={post.link}>
-    <h1>{post.title}</h1>
+    <p>{post.title}</p>
   </a>
 </div>
 
+<h3>Chatties</h3>
+
+<div class="flex flex-col gap-2">
+  <a :for={chatty <- @content.chatty.items} href={chatty.link}>
+    <p>{chatty.title}</p>
+  </a>
+</div>

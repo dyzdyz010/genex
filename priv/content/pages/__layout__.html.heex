@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><%= title(@site, @meta) %></title>
     <meta name="description" content={@site.description} />
-    <link rel="stylesheet" href={"/assets/style.css"} />
+    <link rel="stylesheet" href={"/assets/css/output.css"} />
   </head>
-  <body>
-    <nav>
-      <!-- 全局导航栏 -->
-      <h1>全局导航栏</h1>
+  <body class="h-screen w-screen bg-gray-100">
+    <nav class="bg-blue-500 p-4">
+      <div class="flex justify-between items-center">
+        <h1 class="text-white text-2xl font-bold">全局导航栏</h1>
+        <a href="/posts" class="text-white hover:text-gray-300">Posts</a>
+      </div>
     </nav>
     <main>
       <h2><%= @meta[:title] %></h2>

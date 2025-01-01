@@ -1,4 +1,4 @@
-defmodule Genex.Builder.Content do
+defmodule Genex.Builder.Template do
   alias Genex.Builder.Render.Utils
   alias Genex.Builder.Render.Engines.Markdown
   require Logger

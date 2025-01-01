@@ -23,7 +23,7 @@ defmodule Genex.Application do
     @impl true
     def handle_info(:run_task, state) do
       Genex.Cli.run()
-      # System.stop()
+      System.stop()
       {:noreply, state}
     end
   end
@@ -31,6 +31,8 @@ defmodule Genex.Application do
   @impl true
   def start(_type, _args) do
     IO.puts("Starting Genex application")
+
+    Logger.info("Pwd: #{File.cwd!()}")
 
     Logger.info("Args: #{inspect(Burrito.Util.Args.argv(), pretty: true)}")
 

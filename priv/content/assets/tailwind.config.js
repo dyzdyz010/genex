@@ -1,5 +1,5 @@
 export default {
-  content: ["../**/*.{html,heex,md}"],
+  content: ["../**/*.{html,heex,md,css}"],
   theme: {
     extend: {},
   },
