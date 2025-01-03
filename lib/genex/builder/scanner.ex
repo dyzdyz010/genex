@@ -22,12 +22,12 @@ defmodule Genex.Builder.Scanner do
         Logger.debug("Model: #{inspect(model, pretty: true)}")
         post_content = File.read!(file)
         # Logger.debug("Post content: #{inspect(post_content, pretty: true)}")
-        meta = Utils.parse_meta(post_content)
+        meta_map = Utils.parse_meta(post_content)
 
         rendered_content = Markdown.render_content(post_content)
         # Logger.debug("Meta: #{inspect(meta, pretty: true)}")
-        meta = meta |> Map.put(:content, {:safe, rendered_content})
-        data = model.model_from_map(meta)
+        meta_map = meta_map |> Map.put(:content, {:safe, rendered_content})
+        data = model.model_from_map(meta_map)
         data
         # Logger.debug("Data: #{inspect(data, pretty: true)}")
         # post = Page.render_content(models_map, meta)

@@ -71,7 +71,7 @@ defmodule Genex.Builder.Render.Utils do
   2. markdown
   """
   @spec read_template(String.t(), :heex | :markdown | :html | :unknown) :: String.t()
-  def read_template(template, type) do
+  def read_template(template, _type) do
     # Logger.info("Project root: #{project_root}")
     # Logger.info("Pages folder: #{pages_folder}")
     template_path = Path.join([pages_path(), template])

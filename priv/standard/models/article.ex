@@ -5,10 +5,10 @@ defmodule Genex.Models.Article do
     name: "Article",
     folder: "articles",
     fields: [
-      title: :string,
-      author: :string,
-      date: :string,
-      tags: :list
+      :title,
+      :author,
+      :date,
+      :tags
     ]
 
   @impl Genex.Model

@@ -23,7 +23,12 @@ defmodule Genex.Application do
     @impl true
     def handle_info(:run_task, state) do
       Genex.Cli.run()
-      System.stop()
+
+      # 非开发环境，停止应用
+      unless Application.get_env(:genex, :env) == :dev do
+        System.stop()
+      end
+
       {:noreply, state}
     end
   end

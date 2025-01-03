@@ -32,6 +32,11 @@ defmodule Genex.MixProject do
               os: :linux,
               cpu: :x86_64
             ],
+            linux_musl: [
+              os: :linux,
+              cpu: :x86_64,
+              musl: true
+            ],
             windows: [os: :windows, cpu: :x86_64]
           ]
         ]
