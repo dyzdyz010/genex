@@ -30,3 +30,5 @@ genex-*.tar
 .build/
 
 .output/
+
+.elixir_ls
