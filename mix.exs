@@ -27,17 +27,17 @@ defmodule Genex.MixProject do
         steps: [:assemble, &Burrito.wrap/1],
         burrito: [
           targets: [
-            macos: [os: :darwin, cpu: :arm64],
-            linux: [
-              os: :linux,
-              cpu: :x86_64
-            ],
+            # macos: [os: :darwin, cpu: :arm64],
+            # linux: [
+            #   os: :linux,
+            #   cpu: :x86_64
+            # ],
             linux_musl: [
               os: :linux,
               cpu: :x86_64,
               musl: true
-            ],
-            windows: [os: :windows, cpu: :x86_64]
+            ]
+            # windows: [os: :windows, cpu: :x86_64]
           ]
         ]
       ]
