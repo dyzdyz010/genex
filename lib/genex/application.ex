@@ -8,6 +8,7 @@ defmodule Genex.Application do
   require Logger
 
   defmodule TaskWorker do
+    alias Genex.Cli
     use GenServer
 
     def start_link(_) do
@@ -27,6 +28,8 @@ defmodule Genex.Application do
       # 非开发环境，停止应用
       unless Application.get_env(:genex, :env) == :dev do
         System.stop()
+      else
+        Cli.load_project_config()
       end
 
       {:noreply, state}
@@ -36,10 +39,11 @@ defmodule Genex.Application do
   @impl true
   def start(_type, _args) do
     IO.puts("Starting Genex application")
+    # Logger.info("Mix env: #{Application.get_env(:genex, :env)}")
 
-    Logger.info("Pwd: #{File.cwd!()}")
+    # Logger.info("Pwd: #{File.cwd!()}")
 
-    Logger.info("Args: #{inspect(Burrito.Util.Args.argv(), pretty: true)}")
+    # Logger.info("Args: #{inspect(Burrito.Util.Args.argv(), pretty: true)}")
 
     children = [
       {TaskWorker, []}

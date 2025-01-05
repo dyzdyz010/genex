@@ -8,7 +8,7 @@ defmodule Genex.Builder do
 
   def build() do
     IO.puts("#{IO.ANSI.yellow()}Start building site...")
-    Logger.debug("Project root: #{Utils.project_root()}")
+    # Logger.debug("Project root: #{Utils.project_root()}")
     clean()
     Genex.Hook.run_pre_hooks()
     models_map = Genex.Builder.Model.prepare()
@@ -36,6 +36,7 @@ defmodule Genex.Builder do
   def clean() do
     IO.puts("#{IO.ANSI.green()}Start cleaning site...")
     output_folder = Utils.output_path()
+    Logger.debug("Output folder: #{output_folder}")
 
     if File.exists?(output_folder) do
       # Empty the output folder
@@ -55,7 +56,7 @@ defmodule Genex.Builder do
       end)
       |> List.flatten()
 
-    Logger.debug("Routes: #{inspect(routes, pretty: true)}")
+    # Logger.debug("Routes: #{inspect(routes, pretty: true)}")
 
     routes
   end

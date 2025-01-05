@@ -21,7 +21,7 @@ defmodule Genex.Builder.Render.Layout do
 
   @spec rewrite_layout_chain(list(), nil | false | String.t() | list(), map()) :: list()
   def rewrite_layout_chain(default_chain, layout_config, layouts) do
-    Logger.debug("layout_config: #{inspect(layout_config)}")
+    # Logger.debug("layout_config: #{inspect(layout_config)}")
 
     case layout_config do
       nil ->

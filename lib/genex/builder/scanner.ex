@@ -5,21 +5,21 @@ defmodule Genex.Builder.Scanner do
   alias Genex.Builder.Types.PageTemplate
 
   def scan_content(path, models_map) do
-    Logger.debug("Path: #{inspect(path, pretty: true)}")
+    # Logger.debug("Path: #{inspect(path, pretty: true)}")
 
     data =
       Path.wildcard(Path.join(path, "**/*.md"))
       |> Enum.map(fn file ->
         filepath = Path.dirname(file)
         rel_folder = Path.relative_to(filepath, Utils.content_path())
-        Logger.debug("Relative folder: #{inspect(rel_folder, pretty: true)}")
+        # Logger.debug("Relative folder: #{inspect(rel_folder, pretty: true)}")
         [model_folder | _] = String.split(rel_folder, "/")
-        Logger.debug("Model folder: #{inspect(model_folder, pretty: true)}")
+        # Logger.debug("Model folder: #{inspect(model_folder, pretty: true)}")
 
         {_model_name, model} =
           models_map |> Enum.find(fn {_, v} -> v.folder() == model_folder end)
 
-        Logger.debug("Model: #{inspect(model, pretty: true)}")
+        # Logger.debug("Model: #{inspect(model, pretty: true)}")
         post_content = File.read!(file)
         # Logger.debug("Post content: #{inspect(post_content, pretty: true)}")
         meta_map = Utils.parse_meta(post_content)

@@ -1,0 +1,19 @@
+<h2>Tags</h2>
+
+<%= for tag <- @content.articles.fields.tags do %>
+  <span><%= tag %></span>
+<% end %>
+
+<h2>Posts</h2>
+
+<%= for post <- @content.articles.items do %>
+  <div class="flex flex-col gap-2">
+    <h3><%= post.title %></h3>
+    <div class="flex gap-2">
+      <p><%= post.author %></p>
+      <p><%= post.date %></p>
+    </div>
+  </div>
+<% end %>
+
+<.greet />

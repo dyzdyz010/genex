@@ -30,13 +30,13 @@ defmodule Genex.Builder.Route do
         }
       ]
     else
-      Logger.debug("Schema: #{inspect(schema, pretty: true)}")
+      # Logger.debug("Schema: #{inspect(schema, pretty: true)}")
 
       # 获取模型文件夹名
       model_folder = rel_path |> String.split("/") |> List.first()
       model_items = global_assigns.content[model_folder |> String.to_atom()][:items]
 
-      Logger.debug("Model folder: #{inspect(model_folder, pretty: true)}")
+      # Logger.debug("Model folder: #{inspect(model_folder, pretty: true)}")
 
       params_values =
         Enum.reduce(schema, %{}, fn param, acc ->
@@ -87,11 +87,11 @@ defmodule Genex.Builder.Route do
           Map.put(acc, param, values)
         end)
 
-      Logger.debug("Params values: #{inspect(params_values, pretty: true)}")
+      # Logger.debug("Params values: #{inspect(params_values, pretty: true)}")
 
       # params_values
       combinations = params_values |> generate_combinations()
-      Logger.debug("Combinations: #{inspect(combinations, pretty: true)}")
+      # Logger.debug("Combinations: #{inspect(combinations, pretty: true)}")
 
       combinations
       |> Enum.flat_map(fn param_map ->
@@ -124,8 +124,8 @@ defmodule Genex.Builder.Route do
 
               param_map_value = attr_resolve(param_map, param)
 
-              Logger.debug("Param map value: #{inspect(param_map_value, pretty: true)}")
-              Logger.debug("Param value: #{inspect(param_value, pretty: true)}")
+              # Logger.debug("Param map value: #{inspect(param_map_value, pretty: true)}")
+              # Logger.debug("Param value: #{inspect(param_value, pretty: true)}")
 
               cond do
                 # 如果是映射字段且值为列表，检查是否包含
@@ -166,7 +166,7 @@ defmodule Genex.Builder.Route do
           params: param_map
         }
 
-        Logger.debug("Specific assigns: #{inspect(specific_assigns, pretty: true)}")
+        # Logger.debug("Specific assigns: #{inspect(specific_assigns, pretty: true)}")
 
         %{
           template_path: rel_path,
@@ -190,9 +190,9 @@ defmodule Genex.Builder.Route do
 
   defp generate_combinations(params_values) do
     keys = Map.keys(params_values)
-    Logger.debug("Keys: #{inspect(keys, pretty: true)}")
+    # Logger.debug("Keys: #{inspect(keys, pretty: true)}")
     values = Map.values(params_values)
-    Logger.debug("Values: #{inspect(values, pretty: true)}")
+    # Logger.debug("Values: #{inspect(values, pretty: true)}")
 
     values
     |> Utils.cartesian_product()
@@ -230,8 +230,8 @@ defmodule Genex.Builder.Route do
   end
 
   def attr_resolve(data, path) do
-    Logger.debug("Path: #{inspect(path, pretty: true)}")
-    Logger.debug("Data: #{inspect(data, pretty: true)}")
+    # Logger.debug("Path: #{inspect(path, pretty: true)}")
+    # Logger.debug("Data: #{inspect(data, pretty: true)}")
 
     if data |> Map.has_key?(path) do
       data |> Map.get(path)

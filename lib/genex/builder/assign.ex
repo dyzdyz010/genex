@@ -4,7 +4,7 @@ defmodule Genex.Builder.Assign do
   def make_global_assigns(full_content) do
     site_config = make_site_assigns()
     content_config = make_content_assigns(full_content)
-    Logger.debug("Content config: #{inspect(content_config, pretty: true)}")
+    # Logger.debug("Content config: #{inspect(content_config, pretty: true)}")
 
     %{
       site: site_config,

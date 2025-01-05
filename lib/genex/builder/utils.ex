@@ -29,7 +29,9 @@ defmodule Genex.Builder.Render.Utils do
 
   def output_path() do
     project_root = project_root()
+    # Logger.debug("Project root: #{project_root}")
     output_folder = Application.get_env(:genex, :build)[:output_folder]
+    # Logger.debug("Output folder: #{output_folder}")
     Path.join([project_root, output_folder])
   end
 

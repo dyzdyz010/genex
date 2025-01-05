@@ -11,7 +11,7 @@ defmodule Genex.Builder.Render.Engines.Heex do
 
   @impl Genex.Builder.Render.Engine
   def render(path, assigns: assigns) do
-    Logger.info("View module: #{inspect(Genex.Template.View, pretty: true)}")
+    # Logger.info("View module: #{inspect(Genex.Template.View, pretty: true)}")
 
     rendered_content =
       Phoenix.Template.render_to_iodata(Genex.Template.View, path, "html", assigns)

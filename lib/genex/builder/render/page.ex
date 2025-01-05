@@ -26,14 +26,14 @@ defmodule Genex.Builder.Render.Page do
     # end
 
     meta = Utils.parse_meta(content)
-    Logger.info("Meta for template #{template_path}: #{inspect(meta, pretty: true)}")
+    # Logger.info("Meta for template #{template_path}: #{inspect(meta, pretty: true)}")
 
     # 获取布局链
     layout_chain = layout_chains[Path.dirname(template_path)]
 
-    Logger.info(
-      "Layout chain for template #{template_path}: #{inspect(layout_chain, pretty: true)}"
-    )
+    # Logger.info(
+    #   "Layout chain for template #{template_path}: #{inspect(layout_chain, pretty: true)}"
+    # )
 
     layout_chain =
       Layout.rewrite_layout_chain(layout_chain, meta[:layout], layout_chains)
@@ -55,9 +55,9 @@ defmodule Genex.Builder.Render.Page do
   end
 
   defp render_with_layouts(template_path, assigns, layouts_for_template, opts) do
-    Logger.debug(
-      "Template type for template #{template_path}: #{inspect(opts[:type], pretty: true)}"
-    )
+    # Logger.debug(
+    #   "Template type for template #{template_path}: #{inspect(opts[:type], pretty: true)}"
+    # )
 
     rendered_content =
       case opts[:type] do
@@ -106,7 +106,7 @@ defmodule Genex.Builder.Render.Page do
   end
 
   defp write_to_output(output_path, content) do
-    Logger.warning("Output path: #{inspect(output_path, pretty: true)}")
+    # Logger.warning("Output path: #{inspect(output_path, pretty: true)}")
     full_path = Path.join(Utils.output_path(), output_path)
     dir = Path.dirname(full_path)
     # If the directory doesn't exist, create it
