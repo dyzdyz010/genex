@@ -39,5 +39,7 @@ defmodule Genex.Cli.Commands.New do
 
     # 将priv/standard中的所有内容复制到项目目录
     File.cp_r!(Path.join(:code.priv_dir(:genex), "standard"), project_path)
+
+    true
   end
 end

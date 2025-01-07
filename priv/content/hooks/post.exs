@@ -14,10 +14,10 @@ alias Genex.Builder.Render.Utils
 
 assets_folder = Utils.assets_path()
 
-command =
-  "tailwindcss -i #{Path.join([assets_folder, "css", "app.css"])} -o #{Path.join([assets_folder, "css", "output.css"])}"
+# command =
+#   "tailwindcss -i #{Path.join([assets_folder, "css", "app.css"])} -o #{Path.join([assets_folder, "css", "output.css"])}"
 
-IO.puts("Running command: #{command}")
+# IO.puts("Running command: #{command}")
 
 System.cmd("tailwindcss", [
   "-c",

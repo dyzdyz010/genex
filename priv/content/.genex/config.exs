@@ -19,3 +19,7 @@ config :genex, :hooks,
   folder: "hooks",
   pre: ["pre.exs"],
   post: ["post.exs"]
+
+config :genex, :watch,
+  port: 4000,
+  ignored_files: ["assets/css/output.css"]

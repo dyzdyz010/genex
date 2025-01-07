@@ -2,6 +2,8 @@ defmodule Genex.Builder.Content do
   require Logger
 
   def update_links(global_assigns, routes) do
+    # Logger.debug("Routes: #{inspect(routes, pretty: true)}")
+
     links_by_slug =
       routes
       |> Enum.filter(fn x -> x.template_path |> String.ends_with?("[slug].html.heex") end)

@@ -9,6 +9,11 @@ defmodule Genex.Builder.Render.View do
   # import CoreComponents
 
   def gen_view_module() do
+    if Code.ensure_loaded?(Genex.Template.View) do
+      :code.delete(Genex.Template.View)
+      :code.purge(Genex.Template.View)
+    end
+
     pages_path = Utils.pages_path()
 
     quote do
@@ -21,6 +26,7 @@ defmodule Genex.Builder.Render.View do
           pattern: "**/*",
           namespace: Genex.Template
 
+        import Phoenix.HTML
         import Genex.Builder.Render.CoreComponents
 
         unquote(load_components_module())
@@ -45,12 +51,24 @@ defmodule Genex.Builder.Render.View do
   def load_components_module() do
     components_path = Utils.components_path()
 
+    :code.all_loaded()
+    |> Enum.map(fn {mod, _} -> mod end)
+    |> Enum.filter(fn mod ->
+      mod_str = Atom.to_string(mod)
+      String.starts_with?(mod_str, "Elixir.Genex.Components")
+    end)
+    |> Enum.each(fn mod ->
+      Logger.debug("Purging component module: #{inspect(mod)}")
+      :code.delete(mod)
+      :code.purge(mod)
+    end)
+
     for file <- File.ls!(components_path) do
       file_path = Path.join(components_path, file)
       IO.inspect(file_path)
 
       # Load file
-      Code.require_file(file_path)
+      Code.compile_file(file_path)
     end
 
     :code.all_loaded()

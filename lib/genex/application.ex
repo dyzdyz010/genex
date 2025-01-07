@@ -8,7 +8,6 @@ defmodule Genex.Application do
   require Logger
 
   defmodule TaskWorker do
-    alias Genex.Cli
     use GenServer
 
     def start_link(_) do
@@ -23,13 +22,13 @@ defmodule Genex.Application do
 
     @impl true
     def handle_info(:run_task, state) do
-      Genex.Cli.run()
+      should_stop = Genex.Cli.run()
+
+      Logger.debug("Env: #{Application.get_env(:genex, :env)}")
 
       # 非开发环境，停止应用
-      unless Application.get_env(:genex, :env) == :dev do
+      if Application.get_env(:genex, :env) == :prod and should_stop do
         System.stop()
-      else
-        Cli.load_project_config()
       end
 
       {:noreply, state}

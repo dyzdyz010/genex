@@ -5,9 +5,25 @@ defmodule Genex.Builder.Model do
 
   def prepare() do
     # Unload all models
-    # current_models()
+    current_models()
+    |> Enum.each(fn mod ->
+      Logger.info("Unloading model: #{inspect(mod, pretty: true)}")
+      :code.purge(mod)
+      :code.delete(mod)
+      # :code.purge(mod)
+    end)
+
+    Logger.debug("Prepare models: #{inspect(current_models(), pretty: true)}")
+
+    # :code.all_loaded()
+    # |> Enum.map(fn {mod, _} -> mod end)
+    # |> Enum.filter(fn mod ->
+    #   mod_str = Atom.to_string(mod)
+    #   String.starts_with?(mod_str, "Elixir.Genex.Models")
+    # end)
     # |> Enum.each(fn mod ->
-    #   Logger.info("Unloading model: #{inspect(mod, pretty: true)}")
+    #   Logger.debug("Purging model module: #{inspect(mod)}")
+    #   :code.delete(mod)
     #   :code.purge(mod)
     # end)
 
@@ -56,6 +72,7 @@ defmodule Genex.Builder.Model do
     :code.all_loaded()
     |> Enum.map(fn {mod, _beamfile} -> mod end)
     |> Enum.filter(fn mod ->
+      # Logger.debug("Current models: #{inspect(mod, pretty: true)}")
       module_in_models? = mod |> Atom.to_string() |> String.starts_with?("Elixir.Genex.Models")
       module_in_models? and function_exported?(mod, :name, 0)
     end)

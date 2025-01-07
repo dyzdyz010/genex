@@ -33,5 +33,7 @@ defmodule Genex.Cli.Commands.Build do
     end
 
     Genex.Builder.build()
+
+    true
   end
 end

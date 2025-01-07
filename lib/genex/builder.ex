@@ -21,6 +21,7 @@ defmodule Genex.Builder do
       make_routes(templates, global_content, global_assigns)
 
     {global_assigns, routes} = Content.update_links(global_assigns, routes)
+    # Logger.debug("Routes: #{inspect(routes, pretty: true)}")
     routes = resolve_single_item(routes)
 
     layouts = build_layouts()

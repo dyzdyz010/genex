@@ -1,6 +1,7 @@
 defmodule Genex.Components.Basic do
   use Genex.Components
 
+
   attr(:label, :string, required: true)
   attr(:link, :string, required: true)
 

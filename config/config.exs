@@ -1,6 +1,7 @@
 import Config
 
 config :genex, env: Mix.env()
+# config :genex, env: :prod
 
 config :logger, :console,
   format: "$time $metadata[$level] $message\n",
