@@ -45,7 +45,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ${{ github.workspace }}/burrito_output/**/*
+            ${{ github.workspace }}/burrito_out/**/*
           draft: false
           prerelease: true
           token: ${{ secrets.GITHUB_TOKEN }}
