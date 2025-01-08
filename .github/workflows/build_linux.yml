@@ -42,11 +42,11 @@ jobs:
           ./scripts/release_linux.sh
           
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
-            burrito_output/**/*
+            ${{ github.workspace }}/burrito_output/**/*
           draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
