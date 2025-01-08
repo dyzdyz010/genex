@@ -1,5 +1,5 @@
 defmodule Genex.Builder.Model do
-  alias Genex.Builder.Render.Utils
+  alias Genex.Builder.Utils
 
   require Logger
 
@@ -7,7 +7,7 @@ defmodule Genex.Builder.Model do
     # Unload all models
     current_models()
     |> Enum.each(fn mod ->
-      Logger.info("Unloading model: #{inspect(mod, pretty: true)}")
+      Logger.warning("Unloading model: #{inspect(mod, pretty: true)}")
       :code.purge(mod)
       :code.delete(mod)
       # :code.purge(mod)
@@ -69,13 +69,17 @@ defmodule Genex.Builder.Model do
   end
 
   def current_models() do
-    :code.all_loaded()
-    |> Enum.map(fn {mod, _beamfile} -> mod end)
-    |> Enum.filter(fn mod ->
-      # Logger.debug("Current models: #{inspect(mod, pretty: true)}")
-      module_in_models? = mod |> Atom.to_string() |> String.starts_with?("Elixir.Genex.Models")
-      module_in_models? and function_exported?(mod, :name, 0)
-    end)
+    current_models =
+      :code.all_loaded()
+      |> Enum.map(fn {mod, _beamfile} -> mod end)
+      |> Enum.filter(fn mod ->
+        # Logger.debug("Current models: #{inspect(mod, pretty: true)}")
+        module_in_models? = mod |> Atom.to_string() |> String.starts_with?("Elixir.Genex.Models")
+        module_in_models? and function_exported?(mod, :name, 0)
+      end)
+
+    Logger.warning("Current models: #{inspect(current_models, pretty: true)}")
+    current_models
   end
 
   def build_models_map() do

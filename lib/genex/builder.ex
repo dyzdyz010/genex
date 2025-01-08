@@ -4,7 +4,7 @@ defmodule Genex.Builder do
   alias Genex.Builder.Content
   alias Genex.Builder.Route
   alias Genex.Builder.Scanner
-  alias Genex.Builder.Render.Utils
+  alias Genex.Builder.Utils
 
   def build() do
     IO.puts("#{IO.ANSI.yellow()}Start building site...")

@@ -1,6 +1,6 @@
 defmodule Genex.Builder.Scanner do
   require Logger
-  alias Genex.Builder.Render.Utils
+  alias Genex.Builder.Utils
   alias Genex.Builder.Render.Engines.Markdown
   alias Genex.Builder.Types.PageTemplate
 

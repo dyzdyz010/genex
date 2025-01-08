@@ -24,7 +24,7 @@ defmodule Genex.Builder.Content do
           end
 
         Enum.reduce(items, acc, fn item, acc_inner ->
-          Map.put(acc_inner, item.slug, output_path)
+          Map.put(acc_inner, item.slug, "/#{output_path}")
         end)
       end)
 

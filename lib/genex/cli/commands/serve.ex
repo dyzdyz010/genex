@@ -1,5 +1,6 @@
 defmodule Genex.Cli.Commands.Serve do
-  alias Genex.Builder.Render.Utils
+  alias Genex.Cli
+  alias Genex.Builder.Utils
   @behaviour Genex.Cli.Command
 
   require Logger
@@ -23,7 +24,16 @@ defmodule Genex.Cli.Commands.Serve do
   end
 
   @impl Genex.Cli.Command
-  def run(_opts, _args) do
+  def run(_opts \\ [], _args \\ []) do
+    unless Cli.load_project_config() do
+      IO.puts("Not in a Genex project")
+      # Stop the application gracefully if we are not in a Genex project
+      System.stop()
+    end
+
+    # Build the project
+    Genex.Builder.build()
+
     IO.puts("Starting development server")
     port = Application.get_env(:genex, :watch)[:port]
 

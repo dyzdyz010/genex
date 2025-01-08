@@ -1,5 +1,5 @@
 defmodule Genex.Cli do
-  alias Genex.Builder.Render.Utils
+  alias Genex.Builder.Utils
   require Logger
 
   @commands [
@@ -13,7 +13,6 @@ defmodule Genex.Cli do
   end
 
   def run() do
-    load_project_config()
     # Detect if we are in a Genex project by checking if the .genex/config.exs file exists
 
     # IO.puts("Running Genex commands with args: #{inspect(args, pretty: true)}")

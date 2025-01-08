@@ -1,5 +1,5 @@
 defmodule Genex.Builder.Render.Engines.Markdown do
-  alias Genex.Builder.Render.Utils
+  alias Genex.Builder.Utils
   require Logger
   @behaviour Genex.Builder.Render.Engine
 

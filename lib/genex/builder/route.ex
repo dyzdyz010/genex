@@ -1,6 +1,6 @@
 defmodule Genex.Builder.Route do
   alias Genex.Builder.Assign
-  alias Genex.Builder.Render.Utils
+  alias Genex.Builder.Utils
   alias Genex.Builder.Types.PageTemplate
 
   require Logger

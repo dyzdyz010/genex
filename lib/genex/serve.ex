@@ -1,5 +1,5 @@
 defmodule Genex.Serve do
-  alias Genex.Builder.Render.Utils
+  alias Genex.Builder.Utils
   use GenServer
 
   require Logger
@@ -43,17 +43,36 @@ defmodule Genex.Serve do
   end
 
   @impl true
-  def handle_info({:file_event, _pid, {path, _events}}, state) do
-    unless state.ignored_files
-           |> Enum.any?(fn ignored_file -> String.contains?(path, ignored_file) end) do
-      Logger.info("Detected file changes: #{path}")
-      Logger.info("Detected file changes, rebuilding...")
-      # 重新构建项目
-      Task.start(fn ->
+  def handle_info({:file_event, _pid, {path, events}}, state) do
+    if(
+      state.ignored_files
+      |> Enum.all?(fn ignored_file -> not String.contains?(path, ignored_file) end) and
+        (events != [:modified] and events != [:created])
+    ) do
+      try do
+        Logger.info("Detected file changes: #{path}")
+        Logger.debug("Detected file changes: #{inspect(events, pretty: true)}")
+        Logger.info("Detected file changes, rebuilding...")
         Genex.Builder.build()
         Logger.info("Rebuild completed")
-      end)
+      rescue
+        e ->
+          Logger.error("Error rebuilding: #{inspect(e, pretty: true)}")
+      end
     end
+
+    # unless state.ignored_files
+    #        |> Enum.any?(fn ignored_file -> String.contains?(path, ignored_file) end) and
+    #          (events == [:modified] or events == [:created]) do
+    #   Logger.info("Detected file changes: #{path}")
+    #   Logger.debug("Detected file changes: #{inspect(events, pretty: true)}")
+    #   Logger.info("Detected file changes, rebuilding...")
+    #   # 重新构建项目
+    #   # Task.start(fn ->
+    #   #   Genex.Builder.build()
+    #   #   Logger.info("Rebuild completed")
+    #   # end)
+    # end
 
     {:noreply, state}
   end

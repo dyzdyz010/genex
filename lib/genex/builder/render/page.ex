@@ -2,7 +2,7 @@ defmodule Genex.Builder.Render.Page do
   alias Genex.Builder.Render.Layout
   alias Genex.Builder.Render.Engines.Markdown
   alias Genex.Builder.Render.Engines.Heex
-  alias Genex.Builder.Render.Utils
+  alias Genex.Builder.Utils
 
   # @renderers [Genex.Builder.Render.Engines.Heex]
 

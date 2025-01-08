@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 删除burrito_output目录
-rm -rf burrito_output
+# rm -rf burrito_output
 
 # 删除_build目录
 rm -rf _build
@@ -13,5 +13,5 @@ rm -rf deps
 mix deps.get
 
 # 重新编译
-TARGET_ABI=musl MIX_ENV=prod mix release
+TARGET_VENDOR=pc TARGET_OS=windows TARGET_ABI=msvc BURRITO_TARGET=windows MIX_ENV=prod mix release
 # MIX_ENV=prod mix release

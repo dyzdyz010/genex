@@ -1,4 +1,4 @@
-defmodule Genex.Builder.Render.Utils do
+defmodule Genex.Builder.Utils do
   require Logger
 
   def project_root() do

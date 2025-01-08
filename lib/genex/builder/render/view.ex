@@ -2,7 +2,7 @@ defmodule Genex.Builder.Render.View do
   require Logger
 
   # alias Genex.Builder.Render.CoreComponents
-  alias Genex.Builder.Render.Utils
+  alias Genex.Builder.Utils
   # use Phoenix.View, root: "priv/content/pages", pattern: "**/*", namespace: Genex.Builder.Render
 
   # # import Phoenix.HTML

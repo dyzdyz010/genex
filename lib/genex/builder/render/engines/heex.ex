@@ -1,5 +1,5 @@
 defmodule Genex.Builder.Render.Engines.Heex do
-  # alias Genex.Builder.Render.Utils
+  # alias Genex.Builder.Utils
   @behaviour Genex.Builder.Render.Engine
 
   require Logger

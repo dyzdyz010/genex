@@ -1,0 +1,7 @@
+<h2>Articles</h2>
+
+<%= for article <- @content.articles.items do %>
+  <a href={article.link}>
+    <%= article.title %>
+  </a>
+<% end %>

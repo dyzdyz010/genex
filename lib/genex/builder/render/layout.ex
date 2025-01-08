@@ -1,6 +1,6 @@
 defmodule Genex.Builder.Render.Layout do
   require Logger
-  alias Genex.Builder.Render.Utils
+  alias Genex.Builder.Utils
 
   @spec generate_layout_chains() :: map()
   @doc """
