@@ -14,4 +14,3 @@ mix deps.get
 
 # 重新编译
 TARGET_VENDOR=pc TARGET_OS=windows TARGET_ABI=msvc BURRITO_TARGET=windows MIX_ENV=prod mix release
-# MIX_ENV=prod mix release

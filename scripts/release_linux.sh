@@ -19,4 +19,3 @@ TARGET_VENDOR=unknown \
     BURRITO_TARGET=linux \
     MIX_ENV=prod \
     mix release
-# MIX_ENV=prod mix release

@@ -28,11 +28,11 @@ defmodule Genex.MixProject do
         burrito: [
           targets: [
             macos: [os: :darwin, cpu: :arm64],
-            linux: [
+            linux_x86_64: [
               os: :linux,
               cpu: :x86_64
             ],
-            windows: [os: :windows, cpu: :x86_64]
+            windows_x86_64: [os: :windows, cpu: :x86_64]
           ]
         ]
       ]

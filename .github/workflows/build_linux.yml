@@ -1,4 +1,4 @@
-name: Build Linux Release
+name: Build Release
 
 on:
   workflow_dispatch:
@@ -40,6 +40,8 @@ jobs:
         run: |
           chmod +x ./scripts/release_linux.sh
           ./scripts/release_linux.sh
+          chmod +x ./scripts/release_windows.sh
+          ./scripts/release_windows.sh
           
       - name: Create Release
         uses: softprops/action-gh-release@v2
