@@ -13,4 +13,4 @@ rm -rf deps
 mix deps.get
 
 # 重新编译
-TARGET_VENDOR=pc TARGET_OS=windows TARGET_ABI=msvc BURRITO_TARGET=windows MIX_ENV=prod mix release
+TARGET_VENDOR=pc TARGET_OS=windows TARGET_ABI=msvc BURRITO_TARGET=windows_x86_64 MIX_ENV=prod mix release

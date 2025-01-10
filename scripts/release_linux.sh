@@ -16,6 +16,6 @@ mix deps.get
 TARGET_VENDOR=unknown \
     TARGET_OS=linux \
     TARGET_ABI=musl \
-    BURRITO_TARGET=linux \
+    BURRITO_TARGET=linux_x86_64 \
     MIX_ENV=prod \
     mix release
