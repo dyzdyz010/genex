@@ -23,7 +23,7 @@ defmodule Genex.Builder.Assign do
   defp make_content_assigns(full_content) do
     # 分Model，对每个字段进行取值遍历
     full_content
-    |> Enum.group_by(fn item -> item.__struct__.folder |> String.to_atom() end)
+    |> Enum.group_by(fn item -> item.__struct__.folder() |> String.to_atom() end)
     |> Enum.map(fn {folder, items} ->
       field_values = collect_field_values(items)
       {folder, %{items: items, fields: field_values}}

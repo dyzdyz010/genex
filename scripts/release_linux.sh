@@ -13,9 +13,9 @@ rm -rf deps
 mix deps.get
 
 # 重新编译
-TARGET_VENDOR=unknown \
-    TARGET_OS=linux \
-    TARGET_ABI=musl \
-    BURRITO_TARGET=linux_x86_64 \
-    MIX_ENV=prod \
-    mix release
+export TARGET_VENDOR=unknown
+export TARGET_OS=linux
+export TARGET_ABI=musl
+export BURRITO_TARGET=linux_x86_64
+export MIX_ENV=prod
+mix release

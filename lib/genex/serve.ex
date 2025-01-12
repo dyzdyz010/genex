@@ -113,19 +113,17 @@ defmodule Genex.Serve do
         {:_,
          [
            {
-             "/",
+             "/[...]",
              :cowboy_static,
              {
-               :file,
-               Path.join(output_dir, "index.html")
+               :dir,
+               output_dir,
+               [
+                 {:mimetypes, :cow_mimetypes, :all},
+                 {:dir_handler, :cowboy_static, {:dir, output_dir, [{:index_file, "index.html"}]}}
+               ]
              }
-           },
-           {"/[...]", :cowboy_static,
-            {
-              :dir,
-              output_dir,
-              [{:mimetypes, :cow_mimetypes, :all}]
-            }}
+           }
          ]}
       ])
 
