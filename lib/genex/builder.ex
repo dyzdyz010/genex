@@ -4,7 +4,7 @@ defmodule Genex.Builder do
   alias Genex.Builder.Content
   alias Genex.Builder.Route
   alias Genex.Builder.Scanner
-  alias Genex.Builder.Utils
+  alias Genex.Builder.Utils.Paths
 
   def build() do
     IO.puts("#{IO.ANSI.yellow()}Start building site...")
@@ -12,13 +12,18 @@ defmodule Genex.Builder do
     clean()
     Genex.Hook.run_pre_hooks()
     models_map = Genex.Builder.Model.prepare()
+    Logger.debug("Models map: #{inspect(models_map, pretty: true)}")
 
-    global_content = Scanner.scan_content(Utils.content_path(), models_map)
-    global_assigns = Genex.Builder.Assign.make_global_assigns(global_content)
+    unrendered_models = Scanner.scan_content(Paths.content_path(), models_map)
+
+    rendered_models =
+      unrendered_models
+      |> Enum.map(fn model -> Genex.Builder.Utils.Content.render_model(model) end)
+
+    global_assigns = Genex.Builder.Assign.make_global_assigns(rendered_models)
     templates = Scanner.scan_templates()
 
-    routes =
-      make_routes(templates, global_content, global_assigns)
+    routes = make_routes(templates, rendered_models, global_assigns)
 
     {global_assigns, routes} = Content.update_links(global_assigns, routes)
     # Logger.debug("Routes: #{inspect(routes, pretty: true)}")
@@ -36,7 +41,7 @@ defmodule Genex.Builder do
 
   def clean() do
     IO.puts("#{IO.ANSI.green()}Start cleaning site...")
-    output_folder = Utils.output_path()
+    output_folder = Paths.output_path()
     Logger.debug("Output folder: #{output_folder}")
 
     if File.exists?(output_folder) do
@@ -91,14 +96,14 @@ defmodule Genex.Builder do
   end
 
   defp copy_assets() do
-    output_path = Utils.output_path()
+    output_path = Paths.output_path()
     assets_folder = Application.get_env(:genex, :build)[:assets_folder]
 
     unless assets_folder == nil do
       assets_path = Path.join([output_path, assets_folder])
       Logger.debug("Assets path: #{assets_path}")
       File.mkdir_p!(assets_path)
-      File.cp_r!(Utils.assets_path(), assets_path)
+      File.cp_r!(Paths.assets_path(), assets_path)
     end
   end
 

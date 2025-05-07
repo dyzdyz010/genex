@@ -1,6 +1,6 @@
 defmodule Genex.Cli.Commands.Serve do
   alias Genex.Cli
-  alias Genex.Builder.Utils
+  alias Genex.Builder.Utils.Paths
   @behaviour Genex.Cli.Command
 
   require Logger
@@ -38,9 +38,9 @@ defmodule Genex.Cli.Commands.Serve do
     port = Application.get_env(:genex, :watch)[:port]
 
     ignored_files = [
-      Utils.output_path()
+      Paths.output_path()
       | Application.get_env(:genex, :watch)[:ignored_files]
-        |> Enum.map(fn path -> Path.join(Utils.project_root(), path) end)
+        |> Enum.map(fn path -> Path.join(Paths.project_root(), path) end)
     ]
 
     Logger.info("Ignored files: #{inspect(ignored_files)}")

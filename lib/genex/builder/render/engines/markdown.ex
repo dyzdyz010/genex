@@ -1,11 +1,11 @@
 defmodule Genex.Builder.Render.Engines.Markdown do
-  alias Genex.Builder.Utils
+  alias Genex.Builder.Utils.Content
   require Logger
   @behaviour Genex.Builder.Render.Engine
 
   @impl true
   def render(template_path, _opts \\ []) do
-    content = Utils.read_template(template_path, :markdown)
+    content = Content.read_template(template_path, :markdown)
 
     Logger.debug("Rendering Markdown content: #{inspect(template_path, pretty: true)}")
     MDEx.to_html!(content, render: [unsafe_: true])

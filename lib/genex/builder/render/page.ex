@@ -1,9 +1,26 @@
 defmodule Genex.Builder.Render.Page do
+  @moduledoc """
+  页面渲染器
+
+  页面渲染器负责将页面模板渲染为最终的 HTML 内容。
+  它支持多种模板类型，包括 Heex、Markdown 和未知类型。
+
+  页面渲染器会根据模板路径和布局链来确定最终的布局链，然后应用布局。
+
+  ## 渲染流程
+
+  1. 获取模板内容
+  2. 解析模板元数据
+  3. 获取布局链
+  4. 重写布局链
+  5. 应用布局
+  """
+
   alias Genex.Builder.Render.Layout
   alias Genex.Builder.Render.Engines.Markdown
   alias Genex.Builder.Render.Engines.Heex
-  alias Genex.Builder.Utils
-
+  alias Genex.Builder.Utils.Paths
+  alias Genex.Builder.Utils.Content
   # @renderers [Genex.Builder.Render.Engines.Heex]
 
   # use Phoenix.Template,
@@ -19,13 +36,13 @@ defmodule Genex.Builder.Render.Page do
       ) do
     # Logger.debug("Assigns: #{inspect(assigns, pretty: true)}")
     # 获取模板内容
-    content = Utils.read_template(template_path, type)
+    content = Content.read_template(template_path, type)
 
     # if template_path == "markdown.md" do
     #   Logger.warning("Content: #{inspect(content, pretty: true)}")
     # end
 
-    meta = Utils.parse_meta(content)
+    meta = Content.parse_meta(content)
     # Logger.info("Meta for template #{template_path}: #{inspect(meta, pretty: true)}")
 
     # 获取布局链
@@ -62,7 +79,7 @@ defmodule Genex.Builder.Render.Page do
     rendered_content =
       case opts[:type] do
         type when type in [:heex, :html] ->
-          Heex.render(template_path |> Utils.remove_extension(opts[:type]), assigns: assigns)
+          Heex.render(template_path |> Content.remove_extension(opts[:type]), assigns: assigns)
 
         :markdown ->
           Markdown.render(template_path)
@@ -107,7 +124,7 @@ defmodule Genex.Builder.Render.Page do
 
   defp write_to_output(output_path, content) do
     # Logger.warning("Output path: #{inspect(output_path, pretty: true)}")
-    full_path = Path.join(Utils.output_path(), output_path)
+    full_path = Path.join(Paths.output_path(), output_path)
     dir = Path.dirname(full_path)
     # If the directory doesn't exist, create it
     unless File.exists?(dir) do

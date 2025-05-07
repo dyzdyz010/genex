@@ -15,7 +15,9 @@ defmodule Genex.Hook do
   end
 
   defp run_hook(script_name) do
-    script_path = Path.join([Genex.Builder.Utils.hooks_path(), script_name])
+    script_path =
+      Path.join([Genex.Builder.Utils.Paths.hooks_path(), script_name])
+
     IO.puts("Running hook: #{script_path}")
     Code.eval_file(script_path)
   end

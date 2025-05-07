@@ -1,5 +1,5 @@
 defmodule Genex.Builder.Model do
-  alias Genex.Builder.Utils
+  alias Genex.Builder.Utils.Paths
 
   require Logger
 
@@ -27,7 +27,7 @@ defmodule Genex.Builder.Model do
     #   :code.purge(mod)
     # end)
 
-    models_path = Utils.models_path()
+    models_path = Paths.models_path()
     load_model_files(models_path)
 
     models_map = build_models_map()
@@ -37,7 +37,7 @@ defmodule Genex.Builder.Model do
   end
 
   defp load_content(models_map) do
-    content_path = Utils.content_path()
+    content_path = Paths.content_path()
 
     File.ls!(content_path)
     |> Enum.map(fn file ->
@@ -68,6 +68,9 @@ defmodule Genex.Builder.Model do
     end)
   end
 
+  @doc """
+  Get the current models
+  """
   def current_models() do
     current_models =
       :code.all_loaded()

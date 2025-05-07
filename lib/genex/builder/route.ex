@@ -1,6 +1,6 @@
 defmodule Genex.Builder.Route do
+  alias Genex.Builder.Utils.Content
   alias Genex.Builder.Assign
-  alias Genex.Builder.Utils
   alias Genex.Builder.Types.PageTemplate
 
   require Logger
@@ -195,7 +195,7 @@ defmodule Genex.Builder.Route do
     # Logger.debug("Values: #{inspect(values, pretty: true)}")
 
     values
-    |> Utils.cartesian_product()
+    |> Content.cartesian_product()
     |> Enum.map(fn combo ->
       Enum.zip(keys, combo) |> Enum.into(%{})
     end)

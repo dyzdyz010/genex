@@ -2,7 +2,7 @@ defmodule Genex.Builder.Render.View do
   require Logger
 
   # alias Genex.Builder.Render.CoreComponents
-  alias Genex.Builder.Utils
+  alias Genex.Builder.Utils.Paths
   # use Phoenix.View, root: "priv/content/pages", pattern: "**/*", namespace: Genex.Builder.Render
 
   # # import Phoenix.HTML
@@ -14,7 +14,7 @@ defmodule Genex.Builder.Render.View do
       :code.purge(Genex.Template.View)
     end
 
-    pages_path = Utils.pages_path()
+    pages_path = Paths.pages_path()
 
     quote do
       defmodule Genex.Template.View do
@@ -49,7 +49,7 @@ defmodule Genex.Builder.Render.View do
   end
 
   def load_components_module() do
-    components_path = Utils.components_path()
+    components_path = Paths.components_path()
 
     :code.all_loaded()
     |> Enum.map(fn {mod, _} -> mod end)

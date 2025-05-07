@@ -1,5 +1,5 @@
 defmodule Genex.Serve do
-  alias Genex.Builder.Utils
+  alias Genex.Builder.Utils.Paths
   use GenServer
 
   require Logger
@@ -93,7 +93,7 @@ defmodule Genex.Serve do
   end
 
   defp start_file_watcher() do
-    case FileSystem.start_link(dirs: [Utils.project_root()]) do
+    case FileSystem.start_link(dirs: [Paths.project_root()]) do
       {:ok, pid} ->
         Logger.info("File watcher started")
         FileSystem.subscribe(pid)
@@ -105,7 +105,7 @@ defmodule Genex.Serve do
   end
 
   defp start_cowboy(port) do
-    output_dir = Utils.output_path()
+    output_dir = Paths.output_path()
     Logger.info("Serving files from #{output_dir}")
 
     dispatch =

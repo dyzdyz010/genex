@@ -1,6 +1,6 @@
 defmodule Genex.Builder.Render.Layout do
   require Logger
-  alias Genex.Builder.Utils
+  alias Genex.Builder.Utils.Paths
 
   @spec generate_layout_chains() :: map()
   @doc """
@@ -15,7 +15,7 @@ defmodule Genex.Builder.Render.Layout do
       }
   """
   def generate_layout_chains() do
-    Utils.pages_path()
+    Paths.pages_path()
     |> scan_layouts(%{})
   end
 
@@ -52,7 +52,7 @@ defmodule Genex.Builder.Render.Layout do
   end
 
   defp scan_layouts(dir_path, acc) do
-    rel_path = Path.relative_to(dir_path, Utils.pages_path())
+    rel_path = Path.relative_to(dir_path, Paths.pages_path())
     # Logger.debug("rel_path: #{rel_path}")
 
     # 构建当前目录的布局链并更新accumulator
@@ -103,7 +103,7 @@ defmodule Genex.Builder.Render.Layout do
   end
 
   defp layout_exists?(layout_path) do
-    [Utils.pages_path(), layout_path <> ".html.heex"]
+    [Paths.pages_path(), layout_path <> ".html.heex"]
     |> Path.join()
     |> File.exists?()
   end

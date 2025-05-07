@@ -1,5 +1,5 @@
 defmodule Genex.Cli do
-  alias Genex.Builder.Utils
+  alias Genex.Builder.Utils.Paths
   require Logger
 
   @commands [
@@ -111,7 +111,7 @@ defmodule Genex.Cli do
   def load_project_config() do
     # Get current directory
 
-    case Genex.Config.load_project_config(Utils.project_root()) do
+    case Genex.Config.load_project_config(Paths.project_root()) do
       {:ok, config} ->
         Logger.debug("Loaded project config: #{inspect(config, pretty: true)}")
 

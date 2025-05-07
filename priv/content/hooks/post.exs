@@ -10,9 +10,9 @@ Genex.Hooks.Post.greet()
 
 # Use Tailwind to build css
 
-alias Genex.Builder.Utils
+alias Genex.Builder.Utils.Paths
 
-assets_folder = Utils.assets_path()
+assets_folder = Paths.assets_path()
 
 # command =
 #   "tailwindcss -i #{Path.join([assets_folder, "css", "app.css"])} -o #{Path.join([assets_folder, "css", "output.css"])}"

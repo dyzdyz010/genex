@@ -1,6 +1,8 @@
 defmodule Genex.Model do
   require Logger
 
+  @type t() :: module()
+
   defmodule Field do
     defstruct name: nil, type: nil
     @type t() :: %__MODULE__{name: String.t(), type: :string | :date | :list}
@@ -8,7 +10,7 @@ defmodule Genex.Model do
 
   defmacro __using__(name: name, folder: folder, fields: fields) do
     quote do
-      defstruct(unquote(fields) ++ [:slug])
+      defstruct(unquote(fields) ++ [:slug, :raw_content, :content])
       def name, do: unquote(name)
       def folder, do: unquote(folder)
       def fields, do: unquote(fields)
