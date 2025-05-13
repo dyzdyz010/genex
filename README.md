@@ -13,6 +13,7 @@ Genex is a modern static site generator built with Elixir that combines the powe
 - **Asset Pipeline**: Integrated Tailwind CSS support for modern styling
 - **Development Server**: Live preview with hot-reload capabilities
 - **Cross-Platform**: Available for macOS, Linux, and Windows through binary releases
+- **Mix Archive**: Install and use Genex directly through Mix archive
 
 ## Quick Start
 
@@ -20,14 +21,52 @@ Genex is a modern static site generator built with Elixir that combines the powe
 # Install from binary release
 # TODO: Add installation instructions
 
+# Install via Mix archive
+mix archive.install hex genex
+
+# Or install from source
+git clone https://github.com/hemifuture/genex.git
+cd genex
+mix genex.archive.install
+
 # Create a new site
 genex new my-site
+# or
+mix genex new my-site
 
 # Start development server
 genex serve
+# or
+mix genex serve
 
 # Build for production
 genex build
+# or
+mix genex build
+```
+
+## Installation via Mix Archive
+
+You can install Genex as a Mix archive, which makes it available globally in your Elixir installation:
+
+```bash
+# Install directly from Hex (when published)
+mix archive.install hex genex
+
+# Or install from source
+git clone https://github.com/hemifuture/genex.git
+cd genex
+mix genex.archive.install
+```
+
+After installation, you can use Genex directly from the command line:
+
+```bash
+# Create a new site
+genex new my-site
+
+# Or use it through Mix
+mix genex new my-site
 ```
 
 ## Project Structure

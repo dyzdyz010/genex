@@ -1,0 +1,16 @@
+#!/usr/bin/env elixir
+# -*- mode: elixir -*-
+
+# Resolve the path to the current script
+script_path = __ENV__.file
+scripts_dir = Path.dirname(script_path)
+priv_dir = Path.dirname(scripts_dir)
+app_dir = Path.dirname(priv_dir)
+
+# Add the application to the code path
+Code.prepend_path(Path.join([app_dir, "ebin"]))
+Code.prepend_path(Path.join([app_dir, "_build", "dev", "lib", "genex", "ebin"]))
+
+# Run the Genex CLI task
+Mix.start()
+Mix.CLI.main(["genex" | System.argv()]) 

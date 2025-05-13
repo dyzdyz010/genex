@@ -9,7 +9,9 @@ defmodule Genex.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       releases: releases(),
-      config: "config/config.exs"
+      config: "config/config.exs",
+      description: "Genex application",
+      package: package()
     ]
   end
 
@@ -36,6 +38,25 @@ defmodule Genex.MixProject do
           ]
         ]
       ]
+    ]
+  end
+
+  # Package configuration for hex
+  defp package do
+    [
+      files: [
+        "lib",
+        "priv",
+        "mix.exs",
+        "README.md",
+        ".formatter.exs"
+      ],
+      executables: ["genex"],
+      maintainers: ["Hemifuture Team"],
+      licenses: ["MIT"],
+      links: %{
+        "GitHub" => "https://github.com/hemifuture/genex"
+      }
     ]
   end
 
