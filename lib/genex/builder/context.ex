@@ -5,6 +5,7 @@ defmodule Genex.Builder.Context do
   alias Genex.Builder.Types.PageTemplate
 
   @type t :: %__MODULE__{
+    project_root: binary(),
     config: map(),
     models_map: Scanner.model_map(),
     content_items: [Model.t()],
@@ -16,6 +17,7 @@ defmodule Genex.Builder.Context do
   }
 
   defstruct [
+    :project_root,
     :config,
     :models_map,
     :content_items,

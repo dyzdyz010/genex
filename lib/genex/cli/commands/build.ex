@@ -32,7 +32,7 @@ defmodule Genex.Cli.Commands.Build do
       System.stop()
     end
 
-    Genex.Builder.build()
+    Genex.Builder.build_site()
 
     true
   end

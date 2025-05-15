@@ -5,11 +5,23 @@ defmodule Genex.Builder do
   alias Genex.Builder.Route
   alias Genex.Builder.Scanner
   alias Genex.Builder.Utils.Paths
+  alias Genex.Builder.Phases
 
-  def build() do
+  def build_site() do
+    IO.puts("#{IO.ANSI.blue()}Building site...")
     start_time = System.monotonic_time(:millisecond)
     context = %Genex.Builder.Context{start_time: start_time}
     context
+    |> Phases.Config.load()
+    |> Phases.Plugin.load()
+    |> Phases.Init.run()
+    |> Phases.Content.collect()
+    |> Phases.Template.collect()
+    |> Phases.Route.make()
+    |> Phases.Template.render()
+    |> Phases.Asset.copy()
+
+    IO.puts("#{IO.ANSI.green()}Build site finished")
   end
 
   @spec initialize(Genex.Builder.Context.t()) :: :ok

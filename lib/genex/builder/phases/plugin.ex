@@ -1,5 +1,12 @@
 defmodule Genex.Builder.Phases.Plugin do
-  def run(context) do
+  @moduledoc """
+  Plugin phase
+  """
+
+  @doc """
+  Load plugins
+  """
+  def load(context) do
     context
   end
 end
